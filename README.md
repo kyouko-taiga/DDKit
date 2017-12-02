@@ -1,5 +1,7 @@
 # DDKit
 
+[![Build Status](https://travis-ci.org/kyouko-taiga/DDKit.svg?branch=master)](https://travis-ci.org/kyouko-taiga/DDKit)
+
 DDKit is a library of Decision Diagrams (DDs) pure Swift implementations.
 
 DDs are data structures capable of representing large sets of data.
