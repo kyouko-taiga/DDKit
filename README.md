@@ -9,10 +9,10 @@ and support efficient operations to manipulate multiple elements at once.
 
 ## Provided Implementations
 
-- [] Binary Decision Diagrams (BDDs)
+- [ ] Binary Decision Diagrams (BDDs)
 - [x] Yet another Decision Diagrams (YDDs)
-- [] Data Decision Diagrams (DDDs)
-- [] Sigma Decision Diagrams (ΣDDs)
+- [ ] Data Decision Diagrams (DDDs)
+- [ ] Sigma Decision Diagrams (ΣDDs)
 
 ## Installation
 
@@ -28,8 +28,7 @@ let package = Package(
   // ...
   dependencies: [
     .Package(url: "https://github.com/kyouko-taiga/DDKit.git", branch: "master")
-  ],
-  // ...
+  ])
 ```
 
 Note that latest releases will always be pushed to the `master` branch of the
