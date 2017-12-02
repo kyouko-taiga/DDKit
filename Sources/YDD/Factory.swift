@@ -48,12 +48,12 @@ public class Factory<Key> where Key: Comparable & Hashable {
     }
 
     public func makeNode(key: Key, take: YDD<Key>, skip: YDD<Key>) -> YDD<Key> {
-        assert(take.isTerminal || key < take.key, "invalid YDD ordering")
-        assert(skip.isTerminal || key < skip.key, "invalid YDD ordering")
-
         guard take !== self.zero else {
             return skip
         }
+
+        assert(take.isTerminal || key < take.key, "invalid YDD ordering")
+        assert(skip.isTerminal || key < skip.key, "invalid YDD ordering")
 
         let (_, result) = self.uniquenessTable.insert(
             YDD(key: key, take: take, skip: skip, factory: self),
