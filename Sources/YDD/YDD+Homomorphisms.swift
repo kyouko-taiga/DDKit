@@ -3,17 +3,46 @@ import Homomorphisms
 
 extension YDD: ImmutableSetAlgebra {}
 
-public typealias Identity    <Key: Comparable & Hashable> = Homomorphisms.Identity    <YDD<Key>>
-public typealias Constant    <Key: Comparable & Hashable> = Homomorphisms.Constant    <YDD<Key>>
-public typealias Union       <Key: Comparable & Hashable> = Homomorphisms.Union       <YDD<Key>>
-public typealias Intersection<Key: Comparable & Hashable> = Homomorphisms.Intersection<YDD<Key>>
-public typealias Composition <Key: Comparable & Hashable> = Homomorphisms.Composition <YDD<Key>>
-public typealias FixedPoint  <Key: Comparable & Hashable> = Homomorphisms.FixedPoint  <YDD<Key>>
+public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactory<YDD<Key>>
+    where Key: Comparable & Hashable
+{
+
+    public func makeInsert<S>(_ keys: @autoclosure () -> S) -> Insert<Key>
+        where S: Sequence, S.Element == Key
+    {
+        return self.ensureUnique(Insert(keys, factory: self)) as! Insert
+    }
+
+    public func makeRemove<S>(_ keys: @autoclosure () -> S) -> Remove<Key>
+        where S: Sequence, S.Element == Key
+    {
+        return self.ensureUnique(Remove(keys, factory: self)) as! Remove
+    }
+
+    public func makeFilter<S>(containing keys: @autoclosure () -> S) -> Filter<Key>
+        where S: Sequence, S.Element == Key
+    {
+        return self.ensureUnique(Filter(containing: keys, factory: self)) as! Filter
+    }
+
+    public func makeInductive(
+        substitutingOneWith substitute: YDD<Key>? = nil,
+        applying fn: @escaping (Homomorphism<YDD<Key>>, YDD<Key>) -> Inductive<Key>.Result)
+        -> Inductive<Key>
+    {
+        return self.ensureUnique(
+            Inductive(factory: self, substitutingOneWith: substitute, applying: fn)) as! Inductive
+    }
+
+}
 
 public final class Insert<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Hashable {
 
-    public init<S>(_ keys: @autoclosure () -> S) where S: Sequence, S.Element == Key {
+    public init<S>(_ keys: @autoclosure () -> S, factory: YDDHomomorphismFactory<Key>)
+        where S: Sequence, S.Element == Key
+    {
         self.keys = Array(keys()).sorted()
+        super.init(factory: factory)
     }
 
     public let keys: [Key]
@@ -23,7 +52,7 @@ public final class Insert<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
 
         let factory  = y.factory
         let followup = self.keys.count > 1
-            ? Insert(self.keys.dropFirst())
+            ? (self.factory as! YDDHomomorphismFactory).makeInsert(self.keys.dropFirst())
             : nil
 
         if y.isOne {
@@ -61,8 +90,11 @@ public final class Insert<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
 
 public final class Remove<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Hashable {
 
-    public init<S>(_ keys: @autoclosure () -> S) where S: Sequence, S.Element == Key {
+    public init<S>(_ keys: @autoclosure () -> S, factory: YDDHomomorphismFactory<Key>)
+        where S: Sequence, S.Element == Key
+    {
         self.keys = Array(keys()).sorted()
+        super.init(factory: factory)
     }
 
     public let keys: [Key]
@@ -72,7 +104,7 @@ public final class Remove<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
 
         let factory  = y.factory
         let followup = self.keys.count > 1
-            ? Remove(self.keys.dropFirst())
+            ? (self.factory as! YDDHomomorphismFactory).makeRemove(self.keys.dropFirst())
             : nil
 
         if y.key < self.keys.first! {
@@ -99,8 +131,11 @@ public final class Remove<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
 
 public final class Filter<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Hashable {
 
-    public init<S>(containing keys: @autoclosure () -> S) where S: Sequence, S.Element == Key {
+    public init<S>(containing keys: @autoclosure () -> S, factory: YDDHomomorphismFactory<Key>)
+        where S: Sequence, S.Element == Key
+    {
         self.keys = Array(keys()).sorted()
+        super.init(factory: factory)
     }
 
     public let keys: [Key]
@@ -111,7 +146,7 @@ public final class Filter<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
 
         let factory  = y.factory
         let followup = self.keys.count > 1
-            ? Filter(containing: self.keys.dropFirst())
+            ? (self.factory as! YDDHomomorphismFactory).makeFilter(containing: self.keys.dropFirst())
             : nil
 
         if y.key < self.keys.first! {
@@ -147,11 +182,13 @@ public final class Inductive<Key>: Homomorphism<YDD<Key>> where Key: Comparable 
     public typealias Result = (take: Homomorphism<YDD<Key>>, skip: Homomorphism<YDD<Key>>)
 
     public init(
+        factory: YDDHomomorphismFactory<Key>,
         substitutingOneWith substitute: YDD<Key>? = nil,
         applying fn: @escaping (Homomorphism<YDD<Key>>, YDD<Key>) -> Result)
     {
         self.substitute = substitute
         self.fn         = fn
+        super.init(factory: factory)
     }
 
     public let substitute: YDD<Key>?

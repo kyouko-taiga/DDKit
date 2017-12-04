@@ -29,11 +29,11 @@ import Hashing
 /// Usage
 /// =====
 ///
-/// YDDs should not be created directly. Instead, use `Factory.make` or `Factory.makeNode`. The
-/// reason is that YDD factories maintain a unique table of all nodes they created, so as to enable
-/// memoization on YDD operations (e.g. union).
+/// YDDs should not be created directly. Instead, use `YDDFactory.make` or `YDDFactory.makeNode`.
+/// The reason is that YDD factories maintain a unique table of all nodes they created, so as to
+/// enable memoization on YDD operations (e.g. union).
 ///
-///     let factory = Factory<Int>()
+///     let factory = YDDFactory<Int>()
 ///     let family = factory.make([1, 2], [1])
 ///     print(family)
 ///     // Prints "{{1, 2}, {1}}"
@@ -45,7 +45,7 @@ import Hashing
 /// new ones as the result of some set operation or homomorphism. Suppose you need to store the
 /// set {1, 3} in the existing family {{1, 2}, {1}}.
 ///
-///     let factory = Factory<Int>()
+///     let factory = YDDFactory<Int>()
 ///     var family = factory.make([1, 2], [1])
 ///     family = family.union([[1, 3]])
 ///
@@ -61,7 +61,7 @@ import Hashing
 /// YDDs implement a `contains` method, as well as a `count` and `isEmpty` property, in the usual
 /// fashion of Swift's collections.
 ///
-///     let factory = Factory<Int>()
+///     let factory = YDDFactory<Int>()
 ///     let family = factory.make([1, 2], [1])
 ///     print(family.count)
 ///     // Prints "2"
@@ -71,7 +71,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
     public let take: YDD!
     public let skip: YDD!
 
-    public unowned let factory: Factory<Key>
+    public unowned let factory: YDDFactory<Key>
 
     public let count: Int
 
@@ -333,7 +333,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
     }
 #endif
 
-    init(key: Key, take: YDD, skip: YDD, factory: Factory<Key>) {
+    init(key: Key, take: YDD, skip: YDD, factory: YDDFactory<Key>) {
         self.key     = key
         self.take    = take
         self.skip    = skip
@@ -341,7 +341,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
         self.count   = self.take.count + self.skip.count
     }
 
-    init(factory: Factory<Key>, count: Int) {
+    init(factory: YDDFactory<Key>, count: Int) {
         self.key     = nil
         self.take    = nil
         self.skip   = nil

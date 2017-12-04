@@ -1,7 +1,7 @@
 import Hashing
 import WeakSet
 
-public class Factory<Key> where Key: Comparable & Hashable {
+public class YDDFactory<Key> where Key: Comparable & Hashable {
 
     public init() {
         self.zero = YDD(factory: self, count: 0)

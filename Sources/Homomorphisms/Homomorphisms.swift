@@ -14,7 +14,9 @@ extension Set: ImmutableSetAlgebra {}
 
 open class Homomorphism<S>: Hashable where S: ImmutableSetAlgebra {
 
-    public init() {}
+    public init(factory: HomomorphismFactory<S>) {
+        self.factory = factory
+    }
 
     public final func apply(on s: S) -> S {
         if let result = self.cache[s] {
@@ -30,6 +32,8 @@ open class Homomorphism<S>: Hashable where S: ImmutableSetAlgebra {
         fatalError("not implemented")
     }
 
+    open let factory: HomomorphismFactory<S>
+
     public final var cache: [S: S] = [:]
 
     open var hashValue: Int {
@@ -41,19 +45,19 @@ open class Homomorphism<S>: Hashable where S: ImmutableSetAlgebra {
     }
 
     public static func |(lhs: Homomorphism, rhs: Homomorphism) -> Union<S> {
-        return Union([lhs, rhs])
+        return lhs.factory.makeUnion([lhs, rhs])
     }
 
     public static func &(lhs: Homomorphism, rhs: Homomorphism) -> Intersection<S> {
-        return Intersection([lhs, rhs])
+        return lhs.factory.makeIntersection([lhs, rhs])
     }
 
     public static func °(lhs: Homomorphism, rhs: Homomorphism) -> Composition<S> {
-        return Composition([rhs, lhs])
+        return lhs.factory.makeComposition([rhs, lhs])
     }
 
     public static postfix func *(phi: Homomorphism) -> FixedPoint<S> {
-        return FixedPoint(phi)
+        return phi.factory.makeFixedPoint(phi)
     }
 
 }
@@ -68,8 +72,9 @@ public final class Identity<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
 
 public final class Constant<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
 
-    public init(_ constant: S) {
+    public init(_ constant: S, factory: HomomorphismFactory<S>) {
         self.constant = constant
+        super.init(factory: factory)
     }
 
     public let constant: S
@@ -90,8 +95,11 @@ public final class Constant<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
 
 public final class Union<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
 
-    public init<T>(_ homomorphisms: T) where T: Sequence, T.Element == Homomorphism<S> {
+    public init<T>(_ homomorphisms: T, factory: HomomorphismFactory<S>)
+        where T: Sequence, T.Element == Homomorphism<S>
+    {
         self.homomorphisms = Set(homomorphisms)
+        super.init(factory: factory)
     }
 
     public let homomorphisms: Set<Homomorphism<S>>
@@ -119,23 +127,26 @@ public final class Union<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
     }
 
     public static func |(lhs: Union, rhs: Homomorphism<S>) -> Union {
-        return Union(lhs.homomorphisms.union([rhs]))
+        return lhs.factory.makeUnion(lhs.homomorphisms.union([rhs]))
     }
 
     public static func |(lhs: Homomorphism<S>, rhs: Union) -> Union {
-        return Union(rhs.homomorphisms.union([lhs]))
+        return lhs.factory.makeUnion(rhs.homomorphisms.union([lhs]))
     }
 
     public static func |(lhs: Union, rhs: Union) -> Union {
-        return Union(lhs.homomorphisms.union(rhs.homomorphisms))
+        return lhs.factory.makeUnion(lhs.homomorphisms.union(rhs.homomorphisms))
     }
 
 }
 
 public final class Intersection<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
 
-    public init<T>(_ homomorphisms: T) where T: Sequence, T.Element == Homomorphism<S> {
+    public init<T>(_ homomorphisms: T, factory: HomomorphismFactory<S>)
+        where T: Sequence, T.Element == Homomorphism<S>
+    {
         self.homomorphisms = Set(homomorphisms)
+        super.init(factory: factory)
     }
 
     public let homomorphisms: Set<Homomorphism<S>>
@@ -163,23 +174,26 @@ public final class Intersection<S>: Homomorphism<S> where S: ImmutableSetAlgebra
     }
 
     public static func &(lhs: Intersection, rhs: Homomorphism<S>) -> Intersection {
-        return Intersection(lhs.homomorphisms.union([rhs]))
+        return lhs.factory.makeIntersection(lhs.homomorphisms.union([rhs]))
     }
 
     public static func &(lhs: Homomorphism<S>, rhs: Intersection) -> Intersection {
-        return Intersection(rhs.homomorphisms.union([lhs]))
+        return lhs.factory.makeIntersection(rhs.homomorphisms.union([lhs]))
     }
 
     public static func &(lhs: Intersection, rhs: Intersection) -> Intersection {
-        return Intersection(lhs.homomorphisms.union(rhs.homomorphisms))
+        return lhs.factory.makeIntersection(lhs.homomorphisms.union(rhs.homomorphisms))
     }
 
 }
 
 public class Composition<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
 
-    public init<T>(_ homomorphisms: T) where T: Sequence, T.Element: Homomorphism<S> {
+    public init<T>(_ homomorphisms: T, factory: HomomorphismFactory<S>)
+        where T: Sequence, T.Element: Homomorphism<S>
+    {
         self.homomorphisms = Array(homomorphisms)
+        super.init(factory: factory)
     }
 
     public let homomorphisms: [Homomorphism<S>]
@@ -197,23 +211,24 @@ public class Composition<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
     }
 
     public static func °(lhs: Composition, rhs: Homomorphism<S>) -> Composition {
-        return Composition([rhs] + lhs.homomorphisms)
+        return lhs.factory.makeComposition([rhs] + lhs.homomorphisms)
     }
 
     public static func °(lhs: Homomorphism<S>, rhs: Composition) -> Composition {
-        return Composition(rhs.homomorphisms + [lhs])
+        return lhs.factory.makeComposition(rhs.homomorphisms + [lhs])
     }
 
     public static func °(lhs: Composition, rhs: Composition) -> Composition {
-        return Composition(rhs.homomorphisms + lhs.homomorphisms)
+        return lhs.factory.makeComposition(rhs.homomorphisms + lhs.homomorphisms)
     }
 
 }
 
 public final class FixedPoint<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
 
-    public init(_ phi: Homomorphism<S>) {
+    public init(_ phi: Homomorphism<S>, factory: HomomorphismFactory<S>) {
         self.phi = phi
+        super.init(factory: factory)
     }
 
     public let phi: Homomorphism<S>
