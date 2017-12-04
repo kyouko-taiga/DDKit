@@ -1,5 +1,4 @@
 import Hashing
-import WeakSet
 
 open class HomomorphismFactory<S> where S: ImmutableSetAlgebra {
 
@@ -40,6 +39,7 @@ open class HomomorphismFactory<S> where S: ImmutableSetAlgebra {
         return self.ensureUnique(FixedPoint(phi, factory: self)) as! FixedPoint
     }
 
-    private var uniquenessTable: WeakSet<Homomorphism<S>> = []
+    private var uniquenessTable: Set<Homomorphism<S>> = []
 
 }
+

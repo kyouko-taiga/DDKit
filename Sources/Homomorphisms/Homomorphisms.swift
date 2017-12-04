@@ -36,12 +36,16 @@ open class Homomorphism<S>: Hashable where S: ImmutableSetAlgebra {
 
     public final var cache: [S: S] = [:]
 
+    open func isEqual(to other: Homomorphism) -> Bool {
+        return self === other
+    }
+
     open var hashValue: Int {
         return 0
     }
 
-    open static func ==(lhs: Homomorphism, rhs: Homomorphism) -> Bool {
-        return lhs === rhs
+    public static func ==(lhs: Homomorphism, rhs: Homomorphism) -> Bool {
+        return lhs.isEqual(to: rhs)
     }
 
     public static func |(lhs: Homomorphism, rhs: Homomorphism) -> Union<S> {
@@ -68,6 +72,10 @@ public final class Identity<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
         return s
     }
 
+    public override func isEqual(to other: Homomorphism<S>) -> Bool {
+        return other is Identity
+    }
+
 }
 
 public final class Constant<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
@@ -83,12 +91,14 @@ public final class Constant<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
         return constant
     }
 
-    public override var hashValue: Int {
-        return self.constant.hashValue
+    public override func isEqual(to other: Homomorphism<S>) -> Bool {
+        return (other as? Constant).map {
+            self.constant == $0.constant
+            } ?? false
     }
 
-    public static func ==(lhs: Constant, rhs: Constant) -> Bool {
-        return lhs.constant == rhs.constant
+    public override var hashValue: Int {
+        return self.constant.hashValue
     }
 
 }
@@ -118,12 +128,14 @@ public final class Union<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
         return result
     }
 
-    public override var hashValue: Int {
-        return self.homomorphisms.hashValue
+    public override func isEqual(to other: Homomorphism<S>) -> Bool {
+        return (other as? Union).map {
+            self.homomorphisms == $0.homomorphisms
+            } ?? false
     }
 
-    public static func ==(lhs: Union, rhs: Union) -> Bool {
-        return lhs.homomorphisms == rhs.homomorphisms
+    public override var hashValue: Int {
+        return self.homomorphisms.hashValue
     }
 
     public static func |(lhs: Union, rhs: Homomorphism<S>) -> Union {
@@ -165,12 +177,14 @@ public final class Intersection<S>: Homomorphism<S> where S: ImmutableSetAlgebra
         return result
     }
 
-    public override var hashValue: Int {
-        return self.homomorphisms.hashValue
+    public override func isEqual(to other: Homomorphism<S>) -> Bool {
+        return (other as? Intersection).map {
+            self.homomorphisms == $0.homomorphisms
+            } ?? false
     }
 
-    public static func ==(lhs: Intersection, rhs: Intersection) -> Bool {
-        return lhs.homomorphisms == rhs.homomorphisms
+    public override var hashValue: Int {
+        return self.homomorphisms.hashValue
     }
 
     public static func &(lhs: Intersection, rhs: Homomorphism<S>) -> Intersection {
@@ -202,12 +216,14 @@ public class Composition<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
         return self.homomorphisms.reduce(s, { result, phi in phi.apply(on: result) })
     }
 
-    public override var hashValue: Int {
-        return hash(self.homomorphisms.map({ $0.hashValue }))
+    public override func isEqual(to other: Homomorphism<S>) -> Bool {
+        return (other as? Composition).map {
+            self.homomorphisms == $0.homomorphisms
+            } ?? false
     }
 
-    public static func ==(lhs: Composition, rhs: Composition) -> Bool {
-        return lhs.homomorphisms == rhs.homomorphisms
+    public override var hashValue: Int {
+        return hash(self.homomorphisms.map({ $0.hashValue }))
     }
 
     public static func °(lhs: Composition, rhs: Homomorphism<S>) -> Composition {
@@ -245,13 +261,14 @@ public final class FixedPoint<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
         return result
     }
 
+    public override func isEqual(to other: Homomorphism<S>) -> Bool {
+        return (other as? FixedPoint).map {
+            self.phi == $0.phi
+            } ?? false
+    }
+
     public override var hashValue: Int {
         return self.phi.hashValue
     }
 
-    public static func ==(lhs: FixedPoint, rhs: FixedPoint) -> Bool {
-        return lhs.phi == rhs.phi
-    }
-
 }
-

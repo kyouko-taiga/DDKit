@@ -78,12 +78,15 @@ public final class Insert<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
         }
     }
 
-    public override var hashValue: Int {
-        return hash(self.keys.map({ $0.hashValue }))
+
+    public override func isEqual(to other: Homomorphism<YDD<Key>>) -> Bool {
+        return (other as? Insert).map {
+            self.keys == $0.keys
+            } ?? false
     }
 
-    public static func ==(lhs: Insert, rhs: Insert) -> Bool {
-        return lhs.keys == rhs.keys
+    public override var hashValue: Int {
+        return hash(self.keys.map({ $0.hashValue }))
     }
 
 }
@@ -119,12 +122,14 @@ public final class Remove<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
         }
     }
 
-    public override var hashValue: Int {
-        return hash(self.keys.map({ $0.hashValue }))
+    public override func isEqual(to other: Homomorphism<YDD<Key>>) -> Bool {
+        return (other as? Remove).map {
+            self.keys == $0.keys
+            } ?? false
     }
 
-    public static func ==(lhs: Remove, rhs: Remove) -> Bool {
-        return lhs.keys == rhs.keys
+    public override var hashValue: Int {
+        return hash(self.keys.map({ $0.hashValue }))
     }
 
 }
@@ -164,12 +169,14 @@ public final class Filter<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
         }
     }
 
-    public override var hashValue: Int {
-        return hash(self.keys.map({ $0.hashValue }))
+    public override func isEqual(to other: Homomorphism<YDD<Key>>) -> Bool {
+        return (other as? Filter).map {
+            self.keys == $0.keys
+            } ?? false
     }
 
-    public static func ==(lhs: Filter, rhs: Filter) -> Bool {
-        return lhs.keys == rhs.keys
+    public override var hashValue: Int {
+        return hash(self.keys.map({ $0.hashValue }))
     }
 
 }
@@ -211,3 +218,4 @@ public final class Inductive<Key>: Homomorphism<YDD<Key>> where Key: Comparable 
     }
 
 }
+
