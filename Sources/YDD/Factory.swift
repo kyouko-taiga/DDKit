@@ -1,21 +1,9 @@
 import Hashing
 import WeakSet
 
-public let CACHE_SIZE = 1000
-
 public class Factory<Key> where Key: Comparable & Hashable {
 
-    public init(
-        unionCacheSize              : Int = CACHE_SIZE,
-        intersectionCacheSize       : Int = CACHE_SIZE,
-        symmetricDifferenceCacheSize: Int = CACHE_SIZE,
-        subtractionCache            : Int = CACHE_SIZE)
-    {
-        self.unionCache               = Cache(size: unionCacheSize)
-        self.intersectionCache        = Cache(size: intersectionCacheSize)
-        self.symmetricDifferenceCache = Cache(size: symmetricDifferenceCacheSize)
-        self.subtractionCache         = Cache(size: subtractionCache)
-
+    public init() {
         self.zero = YDD(factory: self, count: 0)
         self.uniquenessTable.insert(self.zero)
         self.one  = YDD(factory: self, count: 1)
@@ -64,43 +52,26 @@ public class Factory<Key> where Key: Comparable & Hashable {
     public private(set) var zero: YDD<Key>! = nil
     public private(set) var one : YDD<Key>! = nil
 
-    var unionCache              : Cache<Key>
-    var intersectionCache       : Cache<Key>
-    var symmetricDifferenceCache: Cache<Key>
-    var subtractionCache        : Cache<Key>
-
-    private var uniquenessTable: WeakSet<YDD<Key>> = []
+    var unionCache              : [CacheKey<Key>: YDD<Key>] = [:]
+    var intersectionCache       : [CacheKey<Key>: YDD<Key>] = [:]
+    var symmetricDifferenceCache: [CacheKey<Key>: YDD<Key>] = [:]
+    var subtractionCache        : [CacheKey<Key>: YDD<Key>] = [:]
+    private var uniquenessTable : WeakSet<YDD<Key>> = []
 
 }
 
 // MARK: Caching
 
-struct Cache<Key> where Key: Comparable & Hashable {
+struct CacheKey<Key>: Hashable where Key: Comparable & Hashable {
 
-    init(size: Int) {
-        self.content = Array(repeating: CacheRecord(), count: size)
+    let operands: [YDD<Key>]
+
+    var hashValue: Int {
+        return hash(operands.map({ $0.hashValue }))
     }
 
-    subscript(lhs: YDD<Key>, rhs: YDD<Key>) -> CacheRecord<Key> {
-        get {
-            let h = abs(hash([lhs.hashValue, rhs.hashValue]) % self.content.count)
-            return self.content[h]
-        }
-
-        set {
-            let h = abs(hash([lhs.hashValue, rhs.hashValue]) % self.content.count)
-            self.content[h] = newValue
-        }
+    static func ==(lhs: CacheKey, rhs: CacheKey) -> Bool {
+        return lhs.operands == rhs.operands
     }
-
-    var content: [CacheRecord<Key>]
-
-}
-
-class CacheRecord<Key> where Key: Comparable & Hashable {
-
-    var lhs   : YDD<Key>? = nil
-    var rhs   : YDD<Key>? = nil
-    var result: YDD<Key>? = nil
 
 }

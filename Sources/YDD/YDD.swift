@@ -127,43 +127,43 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
             return self
         }
 
-        let record = self.factory.unionCache[self, other]
-        if (record.lhs == self) && (record.rhs == self) {
-            return record.result!
+        let cacheKey = CacheKey(operands: [self, other])
+        if let result = self.factory.unionCache[cacheKey] {
+            return result
         }
+        let result: YDD
 
         if self.isOne {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : other.key,
                 take: other.take,
                 skip: other.skip.union(self))
         } else if other.isOne {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : self.key,
                 take: self.take,
                 skip: self.skip.union(other))
         } else if other.key > self.key {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : self.key,
                 take: self.take,
                 skip: self.skip.union(other))
         } else if other.key == self.key {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : self.key,
                 take: self.take.union(other.take),
                 skip: self.skip.union(other.skip))
         } else if other.key < self.key {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : other.key,
                 take: other.take,
                 skip: other.skip.union(self))
         } else {
-            assertionFailure()
+            fatalError()
         }
 
-        record.lhs = self
-        record.rhs = other
-        return record.result!
+        self.factory.unionCache[cacheKey] = result
+        return result
     }
 
 // FIXME
@@ -184,31 +184,31 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
             return other
         }
 
-        let record = self.factory.intersectionCache[self, other]
-        if (record.lhs == self) && (record.rhs == self) {
-            return record.result!
+        let cacheKey = CacheKey(operands: [self, other])
+        if let result = self.factory.intersectionCache[cacheKey] {
+            return result
         }
+        let result: YDD
 
         if self.isOne {
-            record.result = other.skipMost
+            result = other.skipMost
         } else if other.isOne {
-            record.result = self.skipMost
+            result = self.skipMost
         } else if other.key > self.key {
-            record.result = self.skip.intersection(other)
+            result = self.skip.intersection(other)
         } else if other.key == self.key {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : self.key,
                 take: self.take.intersection(other.take),
                 skip: self.skip.intersection(other.skip))
         } else if other.key < self.key {
-            record.result = self.intersection(other.skip)
+            result = self.intersection(other.skip)
         } else {
-            assertionFailure()
+            fatalError()
         }
 
-        record.lhs = self
-        record.rhs = other
-        return record.result!
+        self.factory.intersectionCache[cacheKey] = result
+        return result
     }
 
 // FIXME
@@ -231,43 +231,43 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
             return self.factory.zero
         }
 
-        let record = self.factory.symmetricDifferenceCache[self, other]
-        if (record.lhs == self) && (record.rhs == self) {
-            return record.result!
+        let cacheKey = CacheKey(operands: [self, other])
+        if let result = self.factory.symmetricDifferenceCache[cacheKey] {
+            return result
         }
+        let result: YDD
 
         if self.isOne {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : other.key,
                 take: other.take,
                 skip: self.symmetricDifference(other.skip))
         } else if other.isOne {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : self.key,
                 take: self.take,
                 skip: self.skip.symmetricDifference(other))
         } else if other.key > self.key {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : self.key,
                 take: self.take,
                 skip: self.skip.symmetricDifference(other))
         } else if other.key == self.key {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : self.key,
                 take: self.take.symmetricDifference(other.take),
                 skip: self.skip.symmetricDifference(other.skip))
         } else if other.key < self.key {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : other.key,
                 take: other.take,
                 skip: self.symmetricDifference(other.skip))
         } else {
-            assertionFailure()
+            fatalError()
         }
 
-        record.lhs = self
-        record.rhs = other
-        return record.result!
+        self.factory.symmetricDifferenceCache[cacheKey] = result
+        return result
     }
 
 // FIXME
@@ -288,39 +288,39 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
             return self.factory.zero
         }
 
-        let record = self.factory.subtractionCache[self, other]
-        if (record.lhs == self) && (record.rhs == self) {
-            return record.result!
+        let cacheKey = CacheKey(operands: [self, other])
+        if let result = self.factory.subtractionCache[cacheKey] {
+            return result
         }
+        let result: YDD
 
         if self.isOne {
-            record.result = other.skipMost.isZero
+            result = other.skipMost.isZero
                 ? self
                 : self.factory.zero
         } else if other.isOne {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : self.key,
                 take: self.take,
                 skip: self.skip.subtracting(other))
         } else if other.key > self.key {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : self.key,
                 take: self.take,
                 skip: self.skip.subtracting(other))
         } else if other.key == self.key {
-            record.result = self.factory.makeNode(
+            result = self.factory.makeNode(
                 key : self.key,
                 take: self.take.subtracting(other.take),
                 skip: self.skip.subtracting(other.skip))
         } else if other.key < self.key {
-            record.result = self.subtracting(other.skip)
+            result = self.subtracting(other.skip)
         } else {
-            assertionFailure()
+            fatalError()
         }
 
-        record.lhs = self
-        record.rhs = other
-        return record.result!
+        self.factory.subtractionCache[cacheKey] = result
+        return result
     }
 
 // FIXME

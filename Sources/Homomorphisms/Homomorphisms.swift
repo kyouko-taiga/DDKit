@@ -17,22 +17,20 @@ open class Homomorphism<S>: Hashable where S: ImmutableSetAlgebra {
     public init() {}
 
     public final func apply(on s: S) -> S {
-        return self.cache.map { cache in
-            if let result = cache[s] {
-                return result
-            } else {
-                let result = self.applyUncached(on: s)
-                cache[s] = result
-                return result
-            }
-        } ?? self.applyUncached(on: s)
+        if let result = self.cache[s] {
+            return result
+        } else {
+            let result    = self.applyUncached(on: s)
+            self.cache[s] = result
+            return result
+        }
     }
 
     open func applyUncached(on s: S) -> S {
         fatalError("not implemented")
     }
 
-    public final var cache: Cache<S>? = nil
+    public final var cache: [S: S] = [:]
 
     open var hashValue: Int {
         return 0
@@ -242,40 +240,3 @@ public final class FixedPoint<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
 
 }
 
-// MARK: Caching
-
-public class Cache<S> where S: ImmutableSetAlgebra {
-
-    public init(size: Int) {
-        self.records = Array.init(repeating: nil, count: size)
-    }
-
-    public subscript(operand: S) -> S? {
-        get {
-            let h = abs(operand.hashValue % self.records.count)
-            if let record = self.records[h] {
-                if record.operand == operand {
-                    return record.result
-                }
-            }
-            return nil
-        }
-
-        set {
-            let h = abs(operand.hashValue % self.records.count)
-            self.records[h] = newValue.map {
-                CacheRecord(operand: operand, result: $0)
-            }
-        }
-    }
-
-    private var records: [CacheRecord<S>?]
-
-}
-
-fileprivate struct CacheRecord<S> where S: ImmutableSetAlgebra {
-
-    let operand: S
-    let result : S
-
-}
