@@ -6,9 +6,7 @@ import PackageDescription
 let package = Package(
     name: "DDKit",
     products: [
-        .library(
-            name: "YDD",
-            targets: ["YDD"]),
+        .library(name: "YDD", targets: ["YDD"]),
     ],
     dependencies: [],
     targets: [
@@ -17,7 +15,7 @@ let package = Package(
             dependencies: ["Hashing", "Homomorphisms", "WeakSet"]),
         .target(
             name: "Homomorphisms",
-            dependencies: ["Hashing"]),
+            dependencies: ["Hashing", "WeakSet"]),
         .target(name: "Hashing"),
         .target(name: "WeakSet"),
 
