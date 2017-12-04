@@ -32,13 +32,13 @@ open class Homomorphism<S>: Hashable where S: ImmutableSetAlgebra {
         fatalError("not implemented")
     }
 
-    open let factory: HomomorphismFactory<S>
-
-    public final var cache: [S: S] = [:]
-
     open func isEqual(to other: Homomorphism) -> Bool {
         return self === other
     }
+
+    open let factory: HomomorphismFactory<S>
+
+    public final var cache: [S: S] = [:]
 
     open var hashValue: Int {
         return 0
@@ -108,7 +108,15 @@ public final class Union<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
     public init<T>(_ homomorphisms: T, factory: HomomorphismFactory<S>)
         where T: Sequence, T.Element == Homomorphism<S>
     {
-        self.homomorphisms = Set(homomorphisms)
+        var homs: Set<Homomorphism<S>> = []
+        for phi in homomorphisms {
+            if let union = phi as? Union {
+                homs.formUnion(union.homomorphisms)
+            } else {
+                homs.insert(phi)
+            }
+        }
+        self.homomorphisms = homs
         super.init(factory: factory)
     }
 
@@ -157,7 +165,15 @@ public final class Intersection<S>: Homomorphism<S> where S: ImmutableSetAlgebra
     public init<T>(_ homomorphisms: T, factory: HomomorphismFactory<S>)
         where T: Sequence, T.Element == Homomorphism<S>
     {
-        self.homomorphisms = Set(homomorphisms)
+        var homs: Set<Homomorphism<S>> = []
+        for phi in homomorphisms {
+            if let intersection = phi as? Intersection {
+                homs.formIntersection(intersection.homomorphisms)
+            } else {
+                homs.insert(phi)
+            }
+        }
+        self.homomorphisms = homs
         super.init(factory: factory)
     }
 
@@ -206,7 +222,15 @@ public class Composition<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
     public init<T>(_ homomorphisms: T, factory: HomomorphismFactory<S>)
         where T: Sequence, T.Element: Homomorphism<S>
     {
-        self.homomorphisms = Array(homomorphisms)
+        var homs: [Homomorphism<S>] = []
+        for phi in homomorphisms {
+            if let composition = phi as? Composition {
+                homs.append(contentsOf: composition.homomorphisms)
+            } else {
+                homs.append(phi)
+            }
+        }
+        self.homomorphisms = homs
         super.init(factory: factory)
     }
 
