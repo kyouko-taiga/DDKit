@@ -5,8 +5,23 @@ postfix operator *
 
 public protocol ImmutableSetAlgebra: Hashable {
 
-    func union       (_ other: Self) -> Self
+    func union(_ other: Self) -> Self
+    func union<S>(_ others: S) -> Self where S: Sequence, S.Element == Self
+
     func intersection(_ other: Self) -> Self
+    func intersection<S>(_ other: S) -> Self where S: Sequence, S.Element == Self
+
+}
+
+extension ImmutableSetAlgebra {
+
+    public func union<S>(_ others: S) -> Self where S: Sequence, S.Element == Self {
+        return others.reduce(self, { $0.union($1) })
+    }
+
+    public func intersection<S>(_ others: S) -> Self where S: Sequence, S.Element == Self {
+        return others.reduce(self, { $0.intersection($1) })
+    }
 
 }
 
@@ -123,17 +138,9 @@ public final class Union<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
     public let homomorphisms: Set<Homomorphism<S>>
 
     public override func applyUncached(on s: S) -> S {
-        var result = s
-        var first  = true
-        for phi in self.homomorphisms {
-            if first {
-                result = phi.apply(on: s)
-                first  = false
-            } else {
-                result = result.union(phi.apply(on: s))
-            }
-        }
-        return result
+        guard !self.homomorphisms.isEmpty else { return s }
+        let results = self.homomorphisms.map({ $0.apply(on: s) })
+        return results.first!.union(results.dropFirst())
     }
 
     public override func isEqual(to other: Homomorphism<S>) -> Bool {
@@ -180,17 +187,9 @@ public final class Intersection<S>: Homomorphism<S> where S: ImmutableSetAlgebra
     public let homomorphisms: Set<Homomorphism<S>>
 
     public override func applyUncached(on s: S) -> S {
-        var result = s
-        var first  = true
-        for phi in self.homomorphisms {
-            if first {
-                result = phi.apply(on: s)
-                first  = false
-            } else {
-                result = result.intersection(phi.apply(on: s))
-            }
-        }
-        return result
+        guard !self.homomorphisms.isEmpty else { return s }
+        let results = self.homomorphisms.map({ $0.apply(on: s) })
+        return results.first!.intersection(results.dropFirst())
     }
 
     public override func isEqual(to other: Homomorphism<S>) -> Bool {
