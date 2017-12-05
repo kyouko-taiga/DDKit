@@ -94,7 +94,7 @@ public final class Constant<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
     public override func isEqual(to other: Homomorphism<S>) -> Bool {
         return (other as? Constant).map {
             self.constant == $0.constant
-            } ?? false
+        } ?? false
     }
 
     public override var hashValue: Int {
@@ -139,7 +139,7 @@ public final class Union<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
     public override func isEqual(to other: Homomorphism<S>) -> Bool {
         return (other as? Union).map {
             self.homomorphisms == $0.homomorphisms
-            } ?? false
+        } ?? false
     }
 
     public override var hashValue: Int {
@@ -196,7 +196,7 @@ public final class Intersection<S>: Homomorphism<S> where S: ImmutableSetAlgebra
     public override func isEqual(to other: Homomorphism<S>) -> Bool {
         return (other as? Intersection).map {
             self.homomorphisms == $0.homomorphisms
-            } ?? false
+        } ?? false
     }
 
     public override var hashValue: Int {
@@ -243,7 +243,7 @@ public class Composition<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
     public override func isEqual(to other: Homomorphism<S>) -> Bool {
         return (other as? Composition).map {
             self.homomorphisms == $0.homomorphisms
-            } ?? false
+        } ?? false
     }
 
     public override var hashValue: Int {
@@ -288,7 +288,7 @@ public final class FixedPoint<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
     public override func isEqual(to other: Homomorphism<S>) -> Bool {
         return (other as? FixedPoint).map {
             self.phi == $0.phi
-            } ?? false
+        } ?? false
     }
 
     public override var hashValue: Int {
