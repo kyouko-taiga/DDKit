@@ -62,16 +62,25 @@ public class YDDFactory<Key> where Key: Comparable & Hashable {
 
 // MARK: Caching
 
-struct CacheKey<Key>: Hashable where Key: Comparable & Hashable {
+enum CacheKey<Key>: Hashable where Key: Comparable & Hashable {
 
-    let operands: [YDD<Key>]
+    case set (Set  <YDD<Key>>)
+    case list(Array<YDD<Key>>)
 
     var hashValue: Int {
-        return hash(operands.map({ $0.hashValue }))
+        switch self {
+        case .set (let s): return s.hashValue
+        case .list(let a): return hash(a.map({ $0.hashValue }))
+        }
     }
 
     static func ==(lhs: CacheKey, rhs: CacheKey) -> Bool {
-        return lhs.operands == rhs.operands
+        switch (lhs, rhs) {
+        case let (.set(ls) , .set(rs)) : return ls == rs
+        case let (.list(la), .list(ra)): return la == ra
+        default                        : return false
+        }
     }
 
 }
+

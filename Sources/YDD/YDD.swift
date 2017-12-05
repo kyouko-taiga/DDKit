@@ -127,7 +127,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
             return self
         }
 
-        let cacheKey = CacheKey(operands: [self, other])
+        let cacheKey: CacheKey = .set([self, other])
         if let result = self.factory.unionCache[cacheKey] {
             return result
         }
@@ -184,7 +184,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
             return other
         }
 
-        let cacheKey = CacheKey(operands: [self, other])
+        let cacheKey: CacheKey = .set([self, other])
         if let result = self.factory.intersectionCache[cacheKey] {
             return result
         }
@@ -231,7 +231,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
             return self.factory.zero
         }
 
-        let cacheKey = CacheKey(operands: [self, other])
+        let cacheKey: CacheKey = .set([self, other])
         if let result = self.factory.symmetricDifferenceCache[cacheKey] {
             return result
         }
@@ -288,7 +288,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
             return self.factory.zero
         }
 
-        let cacheKey = CacheKey(operands: [self, other])
+        let cacheKey: CacheKey = .list([self, other])
         if let result = self.factory.subtractionCache[cacheKey] {
             return result
         }
