@@ -29,12 +29,38 @@ import PackageDescription
 let package = Package(
   // ...
   dependencies: [
-    .Package(url: "https://github.com/kyouko-taiga/DDKit.git", branch: "master")
-  ])
+    .package(url: "https://github.com/kyouko-taiga/DDKit.git", .branch("master")),
+  ],
+  // ...
+)
 ```
 
 Note that latest releases will always be pushed to the `master` branch of the
 [github repository](https://github.com/kyouko-taiga/DDKit.git).
+
+DD implementations are provided in the form of separated libraries.
+To use one particular implementation,
+add its corresponding library as a dependency of your own target:
+
+```swift
+import PackageDescription
+
+let package = Package(
+  // ...
+  targets: [
+    .target(name: "MyTarget", dependencies: ["YDD"]),
+  ],
+  // ...
+)
+```
+
+You'll then be able to import DDKit's symbol into your sources:
+
+```swift
+import YDD
+
+let factory = YDDFactory<String>()
+```
 
 ## License
 
