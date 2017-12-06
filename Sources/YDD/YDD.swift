@@ -168,12 +168,65 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
 
 // FIXME
 #if !os(Linux)
+
+    /// Returns the union of this YDD with multiple other ones.
+    public func union<S>(_ others: S) -> YDD where S: Sequence, S.Element == YDD {
+        var operands = Set(others.filter({ !$0.isZero }))
+
+        if operands.isEmpty {
+            return self
+        } else if self.isZero {
+            return operands.first!.union(operands.dropFirst())
+        }
+
+        operands.formUnion([self])
+        if operands.count == 1 {
+            return operands.first!
+        }
+
+        let cacheKey: CacheKey = .set(operands)
+        if let result = self.factory.unionCache[cacheKey] {
+            return result
+        }
+        let result: YDD
+
+        var results = operands.remove(self.factory.one).map({ [$0] }) ?? []
+        let groups  = Dictionary(grouping: operands, by: { $0.key })
+        for (key, roots) in groups {
+            if roots.count <= 1 {
+                results.append(roots[0])
+            } else {
+                let takes = roots.map({ $0.take! })
+                let skips = roots.map({ $0.skip! })
+                results.append(self.factory.makeNode(
+                    key : key,
+                    take: takes.first!.union(takes.dropFirst()),
+                    skip: skips.first!.union(skips.dropFirst())))
+            }
+        }
+
+        let sorted = results.sorted(by: { lhs, rhs in
+            lhs.isTerminal || rhs.isTerminal || (lhs.key < rhs.key)
+        })
+        result = sorted.dropFirst().reduce(sorted[0], { lhs, rhs in
+            assert(rhs.isOne || (lhs.key < rhs.key))
+            return self.factory.makeNode(
+                key : lhs.key,
+                take: lhs.take,
+                skip: lhs.skip.union(rhs))
+        })
+
+        self.factory.unionCache[cacheKey] = result
+        return result
+    }
+
     /// Returns the union of this YDD with another family of sets.
     public func union<S>(_ other: S) -> YDD
         where S: Sequence, S.Element: Sequence, S.Element.Element == Key
     {
         return self.union(self.factory.make(other))
     }
+
 #endif
 
     /// Returns the intersection of this YDD with another one.
