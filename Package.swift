@@ -6,12 +6,16 @@ import PackageDescription
 let package = Package(
     name: "DDKit",
     products: [
-        .library(name: "YDD", targets: ["YDD"]),
+        .library(name: "YDD" , targets: ["YDD"]),
+        .library(name: "MFDD", targets: ["MFDD"]),
     ],
     dependencies: [],
     targets: [
         .target(
             name: "YDD",
+            dependencies: ["Hashing", "Homomorphisms", "WeakSet"]),
+        .target(
+            name: "MFDD",
             dependencies: ["Hashing", "Homomorphisms", "WeakSet"]),
         .target(
             name: "Homomorphisms",
@@ -22,6 +26,9 @@ let package = Package(
         .testTarget(
             name: "YDDTests",
             dependencies: ["Homomorphisms", "YDD"]),
+        .testTarget(
+            name: "MFDDTests",
+            dependencies: ["Homomorphisms", "MFDD"]),
         .testTarget(
             name: "HomomorphismsTests",
             dependencies: ["Homomorphisms"]),

@@ -93,10 +93,6 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
 
     /// Returns `true` if the YDD contains the given element.
     public func contains(_ element: Set<Key>) -> Bool {
-        // Implementation note: We try to find a path that ends on the one terminal for which
-        // there's a node for every element of the given item whose "take" child is not the zero
-        // terminal.
-
         if element.count == 0 {
             return self.skipMost.isOne
         }
