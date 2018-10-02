@@ -11,29 +11,14 @@ let package = Package(
     ],
     dependencies: [],
     targets: [
-        .target(
-            name: "YDD",
-            dependencies: ["Hashing", "Homomorphisms", "WeakSet"]),
-        .target(
-            name: "MFDD",
-            dependencies: ["Hashing", "Homomorphisms", "WeakSet"]),
-        .target(
-            name: "Homomorphisms",
-            dependencies: ["Hashing", "WeakSet"]),
-        .target(name: "Hashing"),
+        .target(name: "YDD", dependencies: ["Homomorphisms", "WeakSet"]),
+        .target(name: "MFDD", dependencies: ["Homomorphisms", "WeakSet"]),
+        .target(name: "Homomorphisms", dependencies: ["WeakSet"]),
         .target(name: "WeakSet"),
 
-        .testTarget(
-            name: "YDDTests",
-            dependencies: ["Homomorphisms", "YDD"]),
-        .testTarget(
-            name: "MFDDTests",
-            dependencies: ["Homomorphisms", "MFDD"]),
-        .testTarget(
-            name: "HomomorphismsTests",
-            dependencies: ["Homomorphisms"]),
-        .testTarget(
-            name: "WeakSetTests",
-            dependencies: ["WeakSet"]),
+        .testTarget(name: "YDDTests", dependencies: ["Homomorphisms", "YDD"]),
+        .testTarget(name: "MFDDTests", dependencies: ["Homomorphisms", "MFDD"]),
+        .testTarget(name: "HomomorphismsTests", dependencies: ["Homomorphisms"]),
+        .testTarget(name: "WeakSetTests", dependencies: ["WeakSet"]),
     ]
 )
