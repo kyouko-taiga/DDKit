@@ -14,10 +14,6 @@ struct Color: Comparable, Hashable {
     static let aliceBlue = Color(r: 240, g: 248, b: 255)
     static let indianRed = Color(r: 205, g: 92 , b: 92)
 
-    var hashValue: Int {
-        return (self.r << 16) + (self.g << 8) + self.b
-    }
-
     static func ==(lhs: Color, rhs: Color) -> Bool {
         return (lhs.r == rhs.r) && (lhs.g == rhs.g) && (lhs.b == rhs.b)
     }

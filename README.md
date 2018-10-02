@@ -13,6 +13,7 @@ and support efficient operations to manipulate multiple elements at once.
 
 - [ ] Binary Decision Diagrams (BDDs)
 - [x] Yet another Decision Diagrams (YDDs)
+- [x] Map Family Decision Diagrams (YDDs)
 - [ ] Data Decision Diagrams (DDDs)
 - [ ] Sigma Decision Diagrams (ΣDDs)
 
