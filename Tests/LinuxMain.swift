@@ -1,13 +1,14 @@
 import XCTest
-@testable import HomomorphismsTests
-@testable import WeakSetTests
-@testable import YDDTests
-@testable import MFDDTests
 
-XCTMain([
-    testCase(HomomorphismsTests.allTests),
-    testCase(WeakSetTests.allTests),
-    testCase(YDDTests.allTests),
-    testCase(YDDHomomorphismsTests.allTests),
-    testCase(MFDDTests.allTests),
-])
+import HomomorphismsTests
+import MFDDTests
+import WeakSetTests
+import YDDTests
+
+var tests = [XCTestCaseEntry]()
+tests += HomomorphismsTests.__allTests()
+tests += MFDDTests.__allTests()
+tests += WeakSetTests.__allTests()
+tests += YDDTests.__allTests()
+
+XCTMain(tests)
