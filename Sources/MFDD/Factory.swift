@@ -38,11 +38,11 @@ public class MFDDFactory<Key, Value> where Key: Comparable & Hashable, Value: Ha
 
         assert(
             nonZeroTake.values.filter({ !$0.isTerminal && (key > $0.key) }).isEmpty,
-            "invalid YDD ordering")
-        assert(skip.isTerminal || key < skip.key, "invalid YDD ordering")
+            "invalid MFDD ordering")
+        assert(skip.isTerminal || key < skip.key, "invalid MFDD ordering")
 
         let (_, result) = self.uniquenessTable.insert(
-            MFDD(key: key, take: take, skip: skip, factory: self),
+            MFDD(key: key, take: nonZeroTake, skip: skip, factory: self),
             withCustomEquality: Node.areEqual)
         return result
     }
