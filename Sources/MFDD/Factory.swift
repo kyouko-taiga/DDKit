@@ -1,4 +1,3 @@
-import Hashing
 import WeakSet
 
 public class MFDDFactory<Key, Value> where Key: Comparable & Hashable, Value: Hashable {
@@ -65,13 +64,6 @@ enum CacheKey<Key, Value>: Hashable where Key: Comparable & Hashable, Value: Has
 
     case set (Set  <MFDD<Key, Value>>)
     case list(Array<MFDD<Key, Value>>)
-
-    var hashValue: Int {
-        switch self {
-        case .set (let s): return s.hashValue
-        case .list(let a): return hash(a.map({ $0.hashValue }))
-        }
-    }
 
     static func ==(lhs: CacheKey, rhs: CacheKey) -> Bool {
         switch (lhs, rhs) {

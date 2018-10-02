@@ -1,5 +1,3 @@
-import Hashing
-
 /// A YDD Node.
 ///
 /// Yet another Decision Diagrams (YDDs) are structures capable of representing large families of
@@ -80,10 +78,11 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
     public var isTerminal: Bool { return self.isZero || self.isOne }
     public var isEmpty   : Bool { return self.isZero }
 
-    public var hashValue: Int {
-        return self.key != nil
-            ? hash([self.key!.hashValue, self.take!.hashValue, self.skip!.hashValue, self.count])
-            : self.count
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(key)
+        hasher.combine(take)
+        hasher.combine(skip)
+        hasher.combine(count)
     }
 
     /// Returns `true` if these YDDs contain the same elements.
@@ -195,7 +194,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
                 let takes = roots.map({ $0.take! })
                 let skips = roots.map({ $0.skip! })
                 results.append(self.factory.makeNode(
-                    key : key,
+                    key : key!,
                     take: takes.first!.union(takes.dropFirst()),
                     skip: skips.first!.union(skips.dropFirst())))
             }

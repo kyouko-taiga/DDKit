@@ -1,5 +1,4 @@
 import XCTest
-import Hashing
 @testable import MFDD
 
 class MFDDTests: XCTestCase {
@@ -74,7 +73,7 @@ class MFDDTests: XCTestCase {
             let aub = a.union(b)
             let bua = b.union(a)
 
-            XCTAssertEqual(Set(aub.map(HD.init)), Set([HD(fa), HD(fb)]))
+            XCTAssertEqual(Set(aub), Set([fa, fb]))
             XCTAssertEqual(aub, bua)
         }
     }
@@ -107,7 +106,7 @@ class MFDDTests: XCTestCase {
             let aib = a.intersection(b)
             let bia = b.intersection(a)
 
-            XCTAssertEqual(Set(aib.map(HD.init)), Set([["a": 1, "b": 3, "c": 9]]))
+            XCTAssertEqual(Set(aib), Set([["a": 1, "b": 3, "c": 9]]))
             XCTAssertEqual(aib, bia)
         }
 
@@ -149,7 +148,7 @@ class MFDDTests: XCTestCase {
         let overlappingB = factory.make([["a": 1, "b": 3, "c": 9], ["a": 5, "b": 6, "c": 7]])
         let overlappingC = overlappingA.symmetricDifference(overlappingB)
         XCTAssertEqual(
-            Set(overlappingC.map(HD.init)),
+            Set(overlappingC),
             Set([["a": 0, "b": 2, "c": 4], ["a": 5, "b": 6, "c": 7]]))
 
         // Symmetric difference between families with disjoint elements.
@@ -157,7 +156,7 @@ class MFDDTests: XCTestCase {
         let disjointB = factory.make([["a": 1, "b": 3, "c": 0], ["a": 5, "b": 6, "c": 7]])
         let disjointC = disjointA.symmetricDifference(disjointB)
         XCTAssertEqual(
-            Set(disjointC.map(HD.init)),
+            Set(disjointC),
             Set([
                 ["a": 1, "b": 3, "c": 9],
                 ["a": 0, "b": 2, "c": 4],
@@ -181,34 +180,34 @@ class MFDDTests: XCTestCase {
         let overlappingA = factory.make([["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]])
         let overlappingB = factory.make([["a": 1, "b": 3, "c": 9], ["a": 5, "b": 6, "c": 7]])
         let overlappingC = overlappingA.subtracting(overlappingB)
-        XCTAssertEqual(Set(overlappingC.map(HD.init)), Set([["a": 0, "b": 2, "c": 4]]))
+        XCTAssertEqual(Set(overlappingC), Set([["a": 0, "b": 2, "c": 4]]))
 
         // Subtraction between families with disjoint elements.
         let disjointA = factory.make([["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]])
         let disjointB = factory.make([["a": 1, "b": 3, "c": 0], ["a": 5, "b": 6, "c": 7]])
         let disjointC = disjointA.subtracting(disjointB)
         XCTAssertEqual(
-            Set(disjointC.map(HD.init)),
+            Set(disjointC),
             Set([["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]]))
     }
 
     func testAsSequence() {
         let factory = MFDDFactory<String, Int>()
 
-        XCTAssertEqual(Set(factory.zero.map(HD.init)), Set([]))
-        XCTAssertEqual(Set(factory.one .map(HD.init)), Set([[:]]))
+        XCTAssertEqual(Set(factory.zero), Set([]))
+        XCTAssertEqual(Set(factory.one) , Set([[:]]))
 
         XCTAssertEqual(
-            Set(factory.make(["a": 1]).map(HD.init)),
+            Set(factory.make(["a": 1])),
             Set([["a": 1]]))
         XCTAssertEqual(
-            Set(factory.make([:], ["a": 1]).map(HD.init)),
+            Set(factory.make([:], ["a": 1])),
             Set([[:], ["a": 1]]))
         XCTAssertEqual(
-            Set(factory.make(["a": 1, "b": 2], ["a": 1, "b": 2, "c": 3]).map(HD.init)),
+            Set(factory.make(["a": 1, "b": 2], ["a": 1, "b": 2, "c": 3])),
             Set([["a": 1, "b": 2], ["a": 1, "b": 2, "c": 3]]))
         XCTAssertEqual(
-            Set(factory.make(["a": 1, "b": 2], ["a": 1, "b": 3, "c": 3]).map(HD.init)),
+            Set(factory.make(["a": 1, "b": 2], ["a": 1, "b": 3, "c": 3])),
             Set([["a": 1, "b": 2], ["a": 1, "b": 3, "c": 3]]))
     }
 
@@ -222,43 +221,5 @@ class MFDDTests: XCTestCase {
         ("testSubtracting"        , testSubtracting),
         ("testAsSequence"         , testAsSequence),
     ]
-
-}
-
-/// Wrapper around Swift's native Dictionary that supports hashing.
-///
-/// This type will be deprecated from Swift when conditional conformances will be implemented
-/// (see SE-0143).
-struct HD<Key, Value>: Hashable where Key: Hashable, Value: Hashable {
-
-    init(_ content: [Key: Value]) {
-        self.content = content
-    }
-
-    let content: [Key: Value]
-
-    var hashValue: Int {
-        return hash(self.content.map({ [$0.key.hashValue, $0.value.hashValue] }).joined())
-    }
-
-    static func ==(lhs: HD, rhs: HD) -> Bool {
-        return lhs.content == rhs.content
-    }
-
-}
-
-extension HD: CustomStringConvertible {
-
-    var description: String {
-        return self.content.description
-    }
-
-}
-
-extension HD: ExpressibleByDictionaryLiteral {
-
-    init(dictionaryLiteral elements: (Key, Value)...) {
-        self.init(Dictionary(uniqueKeysWithValues: elements))
-    }
 
 }

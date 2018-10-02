@@ -1,5 +1,3 @@
-import Hashing
-
 public final class MFDD<Key, Value>: Hashable
     where Key: Comparable & Hashable, Value: Hashable
 {
@@ -17,14 +15,11 @@ public final class MFDD<Key, Value>: Hashable
     public var isTerminal: Bool { return self.isZero || self.isOne }
     public var isEmpty   : Bool { return self.isZero }
 
-    public var hashValue: Int {
-        guard self.key != nil else { return self.count }
-
-        var hashes = [self.key!.hashValue, self.skip!.hashValue, self.count]
-        for (value, successor) in self.take {
-            hashes.append(contentsOf: [value.hashValue, successor.hashValue])
-        }
-        return hash(hashes)
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(key)
+        hasher.combine(take)
+        hasher.combine(skip)
+        hasher.combine(count)
     }
 
     /// Returns `true` if these MFDDs contain the same elements.
@@ -89,7 +84,7 @@ public final class MFDD<Key, Value>: Hashable
                 other.take[value].map {
                     (value, successor.union($0))
                 } ?? (value, successor)
-            }) + other.take.flatMap({ value, successor in
+            }) + other.take.compactMap({ value, successor in
                 self.take[value] == nil ? (value, successor) : nil
             })
 
@@ -131,7 +126,7 @@ public final class MFDD<Key, Value>: Hashable
         } else if other.key > self.key {
             result = self.skip.intersection(other)
         } else if other.key == self.key {
-            let newTake = self.take.flatMap({ value, successor in
+            let newTake = self.take.compactMap({ value, successor in
                 other.take[value].map({ (value, successor.intersection($0)) })
             })
 
@@ -305,7 +300,7 @@ extension MFDD: Sequence {
         return AnyIterator {
             guard !stack.isEmpty else { return nil }
 
-            let keysWithValues: [(Key, Value)] = stack.flatMap({ (node, index) in
+            let keysWithValues: [(Key, Value)] = stack.compactMap({ (node, index) in
                 if node.isTerminal {
                     return nil
                 } else if index != node.take.endIndex {

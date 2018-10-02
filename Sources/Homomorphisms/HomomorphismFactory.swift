@@ -1,5 +1,3 @@
-import Hashing
-
 open class HomomorphismFactory<S> where S: ImmutableSetAlgebra {
 
     public init() {}

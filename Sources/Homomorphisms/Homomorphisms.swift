@@ -1,5 +1,3 @@
-import Hashing
-
 infix   operator °: NilCoalescingPrecedence
 postfix operator *
 
@@ -51,7 +49,7 @@ open class Homomorphism<S>: Hashable where S: ImmutableSetAlgebra {
         return self === other
     }
 
-    open let factory: HomomorphismFactory<S>
+    public let factory: HomomorphismFactory<S>
 
     public final var cache: [S: S] = [:]
 
@@ -245,8 +243,10 @@ public class Composition<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
         } ?? false
     }
 
-    public override var hashValue: Int {
-        return hash(self.homomorphisms.map({ $0.hashValue }))
+    public func hash(into hasher: inout Hasher) {
+        for phi in homomorphisms {
+            hasher.combine(phi)
+        }
     }
 
     public static func °(lhs: Composition, rhs: Homomorphism<S>) -> Composition {

@@ -1,4 +1,3 @@
-import Hashing
 import Homomorphisms
 
 extension YDD: ImmutableSetAlgebra {}
@@ -268,8 +267,10 @@ public final class Insert<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
         } ?? false
     }
 
-    public override var hashValue: Int {
-        return hash(self.keys.map({ $0.hashValue }))
+    public override func hash(into hasher: inout Hasher) {
+        for key in keys {
+            hasher.combine(key)
+        }
     }
 
 }
@@ -311,8 +312,10 @@ public final class Remove<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
         } ?? false
     }
 
-    public override var hashValue: Int {
-        return hash(self.keys.map({ $0.hashValue }))
+    public override func hash(into hasher: inout Hasher) {
+        for key in keys {
+            hasher.combine(key)
+        }
     }
 
 }
@@ -358,8 +361,10 @@ public final class Filter<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
         } ?? false
     }
 
-    public override var hashValue: Int {
-        return hash(self.keys.map({ $0.hashValue }))
+    public override func hash(into hasher: inout Hasher) {
+        for key in keys {
+            hasher.combine(key)
+        }
     }
 
 }
@@ -402,8 +407,9 @@ public final class Dive<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Has
             } ?? false
     }
 
-    public override var hashValue: Int {
-        return hash([self.key.hashValue, self.phi.hashValue])
+    public override func hash(into hasher: inout Hasher) {
+        hasher.combine(key)
+        hasher.combine(phi)
     }
 
 }
