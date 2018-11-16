@@ -1,5 +1,5 @@
 import XCTest
-@testable import SFDD
+@testable import SFDDKit
 
 class SFDDTests: XCTestCase {
 

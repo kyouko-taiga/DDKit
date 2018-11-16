@@ -1,6 +1,6 @@
 import XCTest
 import Homomorphisms
-@testable import SFDD
+@testable import SFDDKit
 
 struct Color: Comparable, Hashable {
 
@@ -27,8 +27,8 @@ struct Color: Comparable, Hashable {
 class SFDDHomomorphismsTests: XCTestCase {
 
     func testInsert() {
-        let factory    = Factory<Int>()
-        let homFactory = SFDDHomomorphismFactory<Int>()
+        let factory = Factory<Int>()
+        let homFactory = SFDDKit.HomomorphismFactory<Int>()
 
         let phi0 = homFactory.makeInsert([2])
         XCTAssertEqual(phi0.apply(on: factory.zero)     , factory.zero)
@@ -46,8 +46,8 @@ class SFDDHomomorphismsTests: XCTestCase {
     }
 
     func testRemove() {
-        let factory    = Factory<Int>()
-        let homFactory = SFDDHomomorphismFactory<Int>()
+        let factory = Factory<Int>()
+        let homFactory = SFDDKit.HomomorphismFactory<Int>()
 
         let phi0 = homFactory.makeRemove([2])
         XCTAssertEqual(phi0.apply(on: factory.zero)        , factory.zero)
@@ -67,8 +67,8 @@ class SFDDHomomorphismsTests: XCTestCase {
     }
 
     func testFilter() {
-        let factory    = Factory<Int>()
-        let homFactory = SFDDHomomorphismFactory<Int>()
+        let factory = Factory<Int>()
+        let homFactory = SFDDKit.HomomorphismFactory<Int>()
 
         let phi0 = homFactory.makeFilter(containing: [1, 3])
         XCTAssertEqual(phi0.apply(on: factory.zero)        , factory.zero)
@@ -81,8 +81,8 @@ class SFDDHomomorphismsTests: XCTestCase {
     }
 
     func testInductive() {
-        let factory    = Factory<Color>()
-        let homFactory = SFDDHomomorphismFactory<Color>()
+        let factory = Factory<Color>()
+        let homFactory = SFDDKit.HomomorphismFactory<Color>()
 
         let colorSets = factory.make([
             [Color.lightGray],
@@ -107,7 +107,7 @@ class SFDDHomomorphismsTests: XCTestCase {
         let phi1 = homFactory.makeInductive { this, y in
             return (y.key.r == y.key.g) && (y.key.g == y.key.b)
                 ? (take: this                  , skip: this)
-                : (take: cut, skip: this ° (id | homFactory.makeConstant(y.take)))
+                : (take: cut, skip: this.composed(with: id | homFactory.makeConstant(y.take)))
         }
         XCTAssertEqual(phi1.apply(on: factory.zero), factory.zero)
         XCTAssertEqual(phi1.apply(on: factory.one) , factory.one)
