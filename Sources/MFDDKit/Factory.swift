@@ -1,6 +1,6 @@
 import WeakSet
 
-public class MFDDFactory<Key, Value> where Key: Comparable & Hashable, Value: Hashable {
+public class Factory<Key, Value> where Key: Comparable & Hashable, Value: Hashable {
 
   public typealias Node = MFDD<Key, Value>
 
