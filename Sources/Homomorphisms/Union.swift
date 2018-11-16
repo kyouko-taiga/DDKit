@@ -26,7 +26,7 @@ public final class Union<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
   public override func isEqual(to other: Homomorphism<S>) -> Bool {
     return (other as? Union).map {
       self.homomorphisms == $0.homomorphisms
-      } ?? false
+    } ?? false
   }
 
   public override var hashValue: Int {

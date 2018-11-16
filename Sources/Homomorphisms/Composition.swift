@@ -24,7 +24,7 @@ public class Composition<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
   public override func isEqual(to other: Homomorphism<S>) -> Bool {
     return (other as? Composition).map {
       self.homomorphisms == $0.homomorphisms
-      } ?? false
+    } ?? false
   }
 
   public func hash(into hasher: inout Hasher) {
