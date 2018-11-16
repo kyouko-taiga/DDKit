@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "DDKit",
     products: [
-        .library(name: "SFDD" , targets: ["SFDD"]),
+        .library(name: "SFDD", targets: ["SFDD"]),
         .library(name: "MFDD", targets: ["MFDD"]),
     ],
     dependencies: [],
@@ -16,8 +16,8 @@ let package = Package(
         .target(name: "Homomorphisms", dependencies: ["WeakSet"]),
         .target(name: "WeakSet"),
 
-        .testTarget(name: "SFDDTests", dependencies: ["Homomorphisms", "SFDD"]),
-        .testTarget(name: "MFDDTests", dependencies: ["Homomorphisms", "MFDD"]),
+        .testTarget(name: "SFDDTests", dependencies: ["SFDD"]),
+        .testTarget(name: "MFDDTests", dependencies: ["MFDD"]),
         .testTarget(name: "HomomorphismsTests", dependencies: ["Homomorphisms"]),
         .testTarget(name: "WeakSetTests", dependencies: ["WeakSet"]),
     ]
