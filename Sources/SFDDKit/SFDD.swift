@@ -161,9 +161,6 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
         return result
     }
 
-// FIXME
-#if !os(Linux)
-
     /// Returns the union of this SFDD with multiple other ones.
     public func union<S>(_ others: S) -> SFDD where S: Sequence, S.Element == SFDD {
         var operands = Set(others.filter({ !$0.isZero }))
@@ -222,7 +219,6 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
         return self.union(self.factory.make(other))
     }
 
-#endif
 
     /// Returns the intersection of this SFDD with another one.
     public func intersection(_ other: SFDD) -> SFDD {
@@ -259,15 +255,12 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
         return result
     }
 
-// FIXME
-#if !os(Linux)
     /// Returns the intersection of this SFDD with another family of sets.
     public func intersection<S>(_ other: S) -> SFDD
         where S: Sequence, S.Element: Sequence, S.Element.Element == Key
     {
         return self.intersection(self.factory.make(other))
     }
-#endif
 
     /// Returns the symmetric difference between this SFDD and another one.
     public func symmetricDifference(_ other: SFDD) -> SFDD {
@@ -318,15 +311,12 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
         return result
     }
 
-// FIXME
-#if !os(Linux)
     /// Returns the symmetric difference between this SFDD and another family of sets.
     public func symmetricDifference<S>(_ other: S) -> SFDD
         where S: Sequence, S.Element: Sequence, S.Element.Element == Key
     {
         return self.symmetricDifference(self.factory.make(other))
     }
-#endif
 
     /// Returns the result of subtracting another SFDD to this one.
     public func subtracting(_ other: SFDD) -> SFDD {
@@ -371,15 +361,12 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
         return result
     }
 
-// FIXME
-#if !os(Linux)
     /// Returns the result of subtracting another family of sets to this SFDD.
     public func subtracting<S>(_ other: S) -> SFDD
         where S: Sequence, S.Element: Sequence, S.Element.Element == Key
     {
         return self.subtracting(self.factory.make(other))
     }
-#endif
 
     init(key: Key, take: SFDD, skip: SFDD, factory: Factory<Key>) {
         self.key     = key
