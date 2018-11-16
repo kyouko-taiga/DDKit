@@ -24,8 +24,6 @@ DDKit is provided in the form of a Swift package and can be integrated with the
 Add DDKit as a dependency to your package in your `Pacakge.swift` file:
 
 ```swift
-import PackageDescription
-
 let package = Package(
   // ...
   dependencies: [
@@ -43,12 +41,10 @@ To use one particular implementation,
 add its corresponding library as a dependency of your own target:
 
 ```swift
-import PackageDescription
-
 let package = Package(
   // ...
   targets: [
-    .target(name: "MyTarget", dependencies: ["SFDD"]),
+    .target(name: "MyTarget", dependencies: ["SFDDKit"]),
   ],
   // ...
 )
@@ -57,7 +53,7 @@ let package = Package(
 You'll then be able to import DDKit's symbol into your sources:
 
 ```swift
-import SFDD
+import SFDDKit
 
 let factory = Factory<String>()
 ```

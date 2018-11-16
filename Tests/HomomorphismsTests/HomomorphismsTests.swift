@@ -65,13 +65,13 @@ class HomomorphismsTests: XCTestCase {
         XCTAssertEqual(phi1.apply(on: [1, 2]), [2, 3])
 
         // Composition of multiple homomorphisms.
-        let phi2 = factory.makeIdentity() ° factory.makeConstant(Set([2, 3]))
+        let phi2 = factory.makeIdentity().composed(with: factory.makeConstant(Set([2, 3])))
         XCTAssertEqual(phi2.apply(on: [1, 2]), [2, 3])
     }
 
     func testFixedPoint() {
         let factory = HomomorphismFactory<Set<Int>>()
-        let phi = (factory.makeConstant(Set([2, 3])) | factory.makeIdentity())*
+        let phi = (factory.makeConstant(Set([2, 3])) | factory.makeIdentity()).fixed
         XCTAssertEqual(phi.apply(on: [])    , [2, 3])
         XCTAssertEqual(phi.apply(on: [1])   , [1, 2, 3])
         XCTAssertEqual(phi.apply(on: [1, 2]), [1, 2, 3])

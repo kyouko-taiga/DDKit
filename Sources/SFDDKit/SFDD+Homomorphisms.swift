@@ -2,7 +2,7 @@ import Homomorphisms
 
 extension SFDD: ImmutableSetAlgebra {}
 
-public final class SFDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactory<SFDD<Key>>
+public final class HomomorphismFactory<Key>: Homomorphisms.HomomorphismFactory<SFDD<Key>>
     where Key: Comparable & Hashable
 {
 
@@ -135,9 +135,7 @@ public final class SFDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFacto
         if let union = rho as? Union<SFDD<Key>> {
             let id = self.makeIdentity()
             if union.homomorphisms.contains(id) {
-                return self.makeComposition(union.homomorphisms.map({
-                    ($0 | id)* as Homomorphism<SFDD<Key>>
-                }))
+                return self.makeComposition(union.homomorphisms.map({ ($0 | id).fixed }))
             }
         }
         return self.makeFixedPoint(rho)
@@ -220,7 +218,7 @@ public final class SFDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFacto
 
 public final class Insert<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & Hashable {
 
-    public init<S>(_ keys: @autoclosure () -> S, factory: SFDDHomomorphismFactory<Key>)
+    public init<S>(_ keys: @autoclosure () -> S, factory: HomomorphismFactory<Key>)
         where S: Sequence, S.Element == Key
     {
         self.keys = Array(keys()).sorted()
@@ -234,7 +232,7 @@ public final class Insert<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & 
 
         let factory  = y.factory
         let followup = self.keys.count > 1
-            ? (self.factory as! SFDDHomomorphismFactory).makeInsert(self.keys.dropFirst())
+            ? (self.factory as! HomomorphismFactory).makeInsert(self.keys.dropFirst())
             : nil
 
         if y.isOne {
@@ -277,7 +275,7 @@ public final class Insert<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & 
 
 public final class Remove<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & Hashable {
 
-    public init<S>(_ keys: @autoclosure () -> S, factory: SFDDHomomorphismFactory<Key>)
+    public init<S>(_ keys: @autoclosure () -> S, factory: HomomorphismFactory<Key>)
         where S: Sequence, S.Element == Key
     {
         self.keys = Array(keys()).sorted()
@@ -291,7 +289,7 @@ public final class Remove<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & 
 
         let factory  = y.factory
         let followup = self.keys.count > 1
-            ? (self.factory as! SFDDHomomorphismFactory).makeRemove(self.keys.dropFirst())
+            ? (self.factory as! HomomorphismFactory).makeRemove(self.keys.dropFirst())
             : nil
 
         if y.key < self.keys.first! {
@@ -322,7 +320,7 @@ public final class Remove<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & 
 
 public final class Filter<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & Hashable {
 
-    public init<S>(containing keys: @autoclosure () -> S, factory: SFDDHomomorphismFactory<Key>)
+    public init<S>(containing keys: @autoclosure () -> S, factory: HomomorphismFactory<Key>)
         where S: Sequence, S.Element == Key
     {
         self.keys = Array(keys()).sorted()
@@ -337,7 +335,7 @@ public final class Filter<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & 
 
         let factory  = y.factory
         let followup = self.keys.count > 1
-            ? (self.factory as! SFDDHomomorphismFactory).makeFilter(containing: self.keys.dropFirst())
+            ? (self.factory as! HomomorphismFactory).makeFilter(containing: self.keys.dropFirst())
             : nil
 
         if y.key < self.keys.first! {
@@ -374,7 +372,7 @@ public final class Dive<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & Ha
     public init(
         to key: Key,
         beforeApplying phi: Homomorphism<SFDD<Key>>,
-        factory: SFDDHomomorphismFactory<Key>)
+        factory: HomomorphismFactory<Key>)
     {
         self.key = key
         self.phi = phi
@@ -422,7 +420,7 @@ public final class Inductive<Key>: Homomorphism<SFDD<Key>> where Key: Comparable
     public typealias Result = (take: Homomorphism<SFDD<Key>>, skip: Homomorphism<SFDD<Key>>)
 
     public init(
-        factory: SFDDHomomorphismFactory<Key>,
+        factory: HomomorphismFactory<Key>,
         substitutingOneWith substitute: SFDD<Key>? = nil,
         applying fn: @escaping (Homomorphism<SFDD<Key>>, SFDD<Key>) -> Result)
     {

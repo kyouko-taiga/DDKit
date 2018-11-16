@@ -1,6 +1,3 @@
-infix   operator °: NilCoalescingPrecedence
-postfix operator *
-
 open class Homomorphism<S>: Hashable where S: ImmutableSetAlgebra {
 
     public init(factory: HomomorphismFactory<S>) {
@@ -25,6 +22,14 @@ open class Homomorphism<S>: Hashable where S: ImmutableSetAlgebra {
         return self === other
     }
 
+    public func composed(with rhs: Homomorphism) -> Composition<S> {
+        return factory.makeComposition([rhs, self])
+    }
+
+    public var fixed: FixedPoint<S> {
+        return factory.makeFixedPoint(self)
+    }
+
     public let factory: HomomorphismFactory<S>
 
     public final var cache: [S: S] = [:]
@@ -43,14 +48,6 @@ open class Homomorphism<S>: Hashable where S: ImmutableSetAlgebra {
 
     public static func &(lhs: Homomorphism, rhs: Homomorphism) -> Intersection<S> {
         return lhs.factory.makeIntersection([lhs, rhs])
-    }
-
-    public static func °(lhs: Homomorphism, rhs: Homomorphism) -> Composition<S> {
-        return lhs.factory.makeComposition([rhs, lhs])
-    }
-
-    public static postfix func *(phi: Homomorphism) -> FixedPoint<S> {
-        return phi.factory.makeFixedPoint(phi)
     }
 
 }
@@ -225,16 +222,12 @@ public class Composition<S>: Homomorphism<S> where S: ImmutableSetAlgebra {
         }
     }
 
-    public static func °(lhs: Composition, rhs: Homomorphism<S>) -> Composition {
-        return lhs.factory.makeComposition([rhs] + lhs.homomorphisms)
+    public override func composed(with rhs: Homomorphism<S>) -> Composition<S> {
+        return factory.makeComposition([rhs] + homomorphisms)
     }
 
-    public static func °(lhs: Homomorphism<S>, rhs: Composition) -> Composition {
-        return lhs.factory.makeComposition(rhs.homomorphisms + [lhs])
-    }
-
-    public static func °(lhs: Composition, rhs: Composition) -> Composition {
-        return lhs.factory.makeComposition(rhs.homomorphisms + lhs.homomorphisms)
+    public func composed(with rhs: Composition) -> Composition {
+        return factory.makeComposition(rhs.homomorphisms + homomorphisms)
     }
 
 }

@@ -1,5 +1,5 @@
 import XCTest
-@testable import MFDD
+@testable import MFDDKit
 
 class MFDDTests: XCTestCase {
 
