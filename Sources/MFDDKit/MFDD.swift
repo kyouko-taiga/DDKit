@@ -4,7 +4,7 @@ public final class MFDD<Key, Value>: Hashable where Key: Comparable & Hashable, 
   public let take: [Value: MFDD]!
   public let skip: MFDD!
 
-  public unowned let factory: MFDDFactory<Key, Value>
+  public unowned let factory: Factory<Key, Value>
 
   public let count: Int
 
@@ -243,7 +243,7 @@ public final class MFDD<Key, Value>: Hashable where Key: Comparable & Hashable, 
     return result
   }
 
-  init(key: Key, take: [Value: MFDD], skip: MFDD, factory: MFDDFactory<Key, Value>) {
+  init(key: Key, take: [Value: MFDD], skip: MFDD, factory: Factory<Key, Value>) {
     self.key     = key
     self.take    = take
     self.skip    = skip
@@ -251,7 +251,7 @@ public final class MFDD<Key, Value>: Hashable where Key: Comparable & Hashable, 
     self.count   = self.take.values.reduce(0, { $0 + $1.count }) + self.skip.count
   }
 
-  init(factory: MFDDFactory<Key, Value>, count: Int) {
+  init(factory: Factory<Key, Value>, count: Int) {
     self.key     = nil
     self.take    = nil
     self.skip    = nil

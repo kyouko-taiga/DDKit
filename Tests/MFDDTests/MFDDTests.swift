@@ -4,7 +4,7 @@ import XCTest
 class MFDDTests: XCTestCase {
 
   func testCount() {
-    let factory = MFDDFactory<String, Int>()
+    let factory = Factory<String, Int>()
 
     XCTAssertEqual(0, factory.zero.count)
     XCTAssertEqual(1, factory.one.count)
@@ -14,7 +14,7 @@ class MFDDTests: XCTestCase {
   }
 
   func testEquates() {
-    let factory = MFDDFactory<String, Int>()
+    let factory = Factory<String, Int>()
 
     XCTAssertEqual(factory.zero                  , factory.zero)
     XCTAssertEqual(factory.one                   , factory.one)
@@ -23,7 +23,7 @@ class MFDDTests: XCTestCase {
   }
 
   func testContains() {
-    let factory = MFDDFactory<String, Int>()
+    let factory = Factory<String, Int>()
     var family: MFDD<String, Int>
 
     family = factory.zero
@@ -48,7 +48,7 @@ class MFDDTests: XCTestCase {
   }
 
   func testUnion() {
-    let factory = MFDDFactory<String, Int>()
+    let factory = Factory<String, Int>()
 
     // Union of two empty families.
     let eue = factory.make([:]).union(factory.make([:]))
@@ -79,7 +79,7 @@ class MFDDTests: XCTestCase {
   }
 
   func testIntersection() {
-    let factory = MFDDFactory<String, Int>()
+    let factory = Factory<String, Int>()
 
     // Intersection of two empty families.
     let eue = factory.make([:]).intersection(factory.make([:]))
@@ -133,7 +133,7 @@ class MFDDTests: XCTestCase {
   }
 
   func testSymmetricDifference() {
-    let factory = MFDDFactory<String, Int>()
+    let factory = Factory<String, Int>()
 
     // Symmetric difference between two empty families.
     let ese = factory.make([]).symmetricDifference(factory.make([]))
@@ -166,7 +166,7 @@ class MFDDTests: XCTestCase {
   }
 
   func testSubtracting() {
-    let factory = MFDDFactory<String, Int>()
+    let factory = Factory<String, Int>()
 
     // Subtraction between two empty families.
     let ese = factory.make([:]).subtracting(factory.make([:]))
@@ -192,7 +192,7 @@ class MFDDTests: XCTestCase {
   }
 
   func testAsSequence() {
-    let factory = MFDDFactory<String, Int>()
+    let factory = Factory<String, Int>()
 
     XCTAssertEqual(Set(factory.zero), Set([]))
     XCTAssertEqual(Set(factory.one) , Set([[:]]))
