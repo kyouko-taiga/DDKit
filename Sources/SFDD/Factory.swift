@@ -1,15 +1,15 @@
 import WeakSet
 
-public class YDDFactory<Key> where Key: Comparable & Hashable {
+public class Factory<Key> where Key: Comparable & Hashable {
 
     public init() {
-        self.zero = YDD(factory: self, count: 0)
+        self.zero = SFDD(factory: self, count: 0)
         self.uniquenessTable.insert(self.zero)
-        self.one  = YDD(factory: self, count: 1)
+        self.one  = SFDD(factory: self, count: 1)
         self.uniquenessTable.insert(self.one)
     }
 
-    public func make<S>(_ sequences: S) -> YDD<Key>
+    public func make<S>(_ sequences: S) -> SFDD<Key>
         where S: Sequence, S.Element: Sequence, S.Element.Element == Key
     {
         return sequences.reduce(self.zero) { family, newSequence in
@@ -26,32 +26,32 @@ public class YDDFactory<Key> where Key: Comparable & Hashable {
         }
     }
 
-    public func make<S>(_ sequences: S...) -> YDD<Key> where S: Sequence, S.Element == Key {
+    public func make<S>(_ sequences: S...) -> SFDD<Key> where S: Sequence, S.Element == Key {
         return self.make(sequences)
     }
 
-    public func makeNode(key: Key, take: YDD<Key>, skip: YDD<Key>) -> YDD<Key> {
+    public func makeNode(key: Key, take: SFDD<Key>, skip: SFDD<Key>) -> SFDD<Key> {
         guard take !== self.zero else {
             return skip
         }
 
-        assert(take.isTerminal || key < take.key, "invalid YDD ordering")
-        assert(skip.isTerminal || key < skip.key, "invalid YDD ordering")
+        assert(take.isTerminal || key < take.key, "invalid SFDD ordering")
+        assert(skip.isTerminal || key < skip.key, "invalid SFDD ordering")
 
         let (_, result) = self.uniquenessTable.insert(
-            YDD(key: key, take: take, skip: skip, factory: self),
-            withCustomEquality: YDD<Key>.areEqual)
+            SFDD(key: key, take: take, skip: skip, factory: self),
+            withCustomEquality: SFDD<Key>.areEqual)
         return result
     }
 
-    public private(set) var zero: YDD<Key>! = nil
-    public private(set) var one : YDD<Key>! = nil
+    public private(set) var zero: SFDD<Key>! = nil
+    public private(set) var one : SFDD<Key>! = nil
 
-    var unionCache              : [CacheKey<Key>: YDD<Key>] = [:]
-    var intersectionCache       : [CacheKey<Key>: YDD<Key>] = [:]
-    var symmetricDifferenceCache: [CacheKey<Key>: YDD<Key>] = [:]
-    var subtractionCache        : [CacheKey<Key>: YDD<Key>] = [:]
-    private var uniquenessTable : WeakSet<YDD<Key>> = []
+    var unionCache              : [CacheKey<Key>: SFDD<Key>] = [:]
+    var intersectionCache       : [CacheKey<Key>: SFDD<Key>] = [:]
+    var symmetricDifferenceCache: [CacheKey<Key>: SFDD<Key>] = [:]
+    var subtractionCache        : [CacheKey<Key>: SFDD<Key>] = [:]
+    private var uniquenessTable : WeakSet<SFDD<Key>> = []
 
 }
 
@@ -59,8 +59,8 @@ public class YDDFactory<Key> where Key: Comparable & Hashable {
 
 enum CacheKey<Key>: Hashable where Key: Comparable & Hashable {
 
-    case set (Set  <YDD<Key>>)
-    case list(Array<YDD<Key>>)
+    case set (Set  <SFDD<Key>>)
+    case list(Array<SFDD<Key>>)
 
     static func ==(lhs: CacheKey, rhs: CacheKey) -> Bool {
         switch (lhs, rhs) {

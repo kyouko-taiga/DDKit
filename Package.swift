@@ -6,17 +6,17 @@ import PackageDescription
 let package = Package(
     name: "DDKit",
     products: [
-        .library(name: "YDD" , targets: ["YDD"]),
+        .library(name: "SFDD" , targets: ["SFDD"]),
         .library(name: "MFDD", targets: ["MFDD"]),
     ],
     dependencies: [],
     targets: [
-        .target(name: "YDD", dependencies: ["Homomorphisms", "WeakSet"]),
+        .target(name: "SFDD", dependencies: ["Homomorphisms", "WeakSet"]),
         .target(name: "MFDD", dependencies: ["Homomorphisms", "WeakSet"]),
         .target(name: "Homomorphisms", dependencies: ["WeakSet"]),
         .target(name: "WeakSet"),
 
-        .testTarget(name: "YDDTests", dependencies: ["Homomorphisms", "YDD"]),
+        .testTarget(name: "SFDDTests", dependencies: ["Homomorphisms", "SFDD"]),
         .testTarget(name: "MFDDTests", dependencies: ["Homomorphisms", "MFDD"]),
         .testTarget(name: "HomomorphismsTests", dependencies: ["Homomorphisms"]),
         .testTarget(name: "WeakSetTests", dependencies: ["WeakSet"]),

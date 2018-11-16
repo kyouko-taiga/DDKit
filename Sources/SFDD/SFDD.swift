@@ -1,6 +1,6 @@
-/// A YDD Node.
+/// A SFDD Node.
 ///
-/// Yet another Decision Diagrams (YDDs) are structures capable of representing large families of
+/// Yet another Decision Diagrams (SFDDs) are structures capable of representing large families of
 /// sets, and performing various operations on them quite efficiently. They take advantage of the
 /// similarities between the members of a family to compact their representation in a graph-like
 /// structure that can be manipulated with homomorphisms.
@@ -8,15 +8,15 @@
 /// Formal Definition
 /// =================
 ///
-/// Let T be a set of terms. The set of YDDs Y is inductively defined by:
+/// Let T be a set of terms. The set of SFDDs Y is inductively defined by:
 ///
 /// * ⊥ ∈ Y is the rejecting terminal
 /// * ⊤ ∈ Y is the accepting terminal
 /// ⟨t, τ, σ⟩ ∈ Y if and only if t ∈ T ∧ τ,σ ∈ Y
 ///
-/// A YDD is canonical if for all the nodes of the form y = ⟨t, τ, σ⟩ it contains, τ and σ
+/// A SFDD is canonical if for all the nodes of the form y = ⟨t, τ, σ⟩ it contains, τ and σ
 /// represent greater terms, are are terminal nodes. More formally, let < ∈ T × T be a total
-/// ordering on T, a YDD y ∈ Y is canonical if and only if:
+/// ordering on T, a SFDD y ∈ Y is canonical if and only if:
 ///
 /// * y ∈ {⊥, ⊤}
 /// * y = ⟨t, τ, σ⟩ and:
@@ -27,11 +27,11 @@
 /// Usage
 /// =====
 ///
-/// YDDs should not be created directly. Instead, use `YDDFactory.make` or `YDDFactory.makeNode`.
-/// The reason is that YDD factories maintain a unique table of all nodes they created, so as to
-/// enable memoization on YDD operations (e.g. union).
+/// SFDDs should not be created directly. Instead, use `Factory.make` or `Factory.makeNode`.
+/// The reason is that SFDD factories maintain a unique table of all nodes they created, so as to
+/// enable memoization on SFDD operations (e.g. union).
 ///
-///     let factory = YDDFactory<Int>()
+///     let factory = Factory<Int>()
 ///     let family = factory.make([1, 2], [1])
 ///     print(family)
 ///     // Prints "{{1, 2}, {1}}"
@@ -39,37 +39,37 @@
 /// Adding and Removing Elements
 /// ----------------------------
 ///
-/// YDDs are immutable, so you cannot add or remove elements from them. Instead, you should create
+/// SFDDs are immutable, so you cannot add or remove elements from them. Instead, you should create
 /// new ones as the result of some set operation or homomorphism. Suppose you need to store the
 /// set {1, 3} in the existing family {{1, 2}, {1}}.
 ///
-///     let factory = YDDFactory<Int>()
+///     let factory = Factory<Int>()
 ///     var family = factory.make([1, 2], [1])
 ///     family = family.union([[1, 3]])
 ///
-/// YDDs support all basic set operations, i.e. union, intersection, symmetric difference and
+/// SFDDs support all basic set operations, i.e. union, intersection, symmetric difference and
 /// subtraction.
 ///
-/// - Note: YDDs have to remain immutable, so that they can be stored them in a unique table. As a
+/// - Note: SFDDs have to remain immutable, so that they can be stored them in a unique table. As a
 ///   result, they can't conform to Swift's `SetAlgebra` protocol.
 ///
 /// Querying the Elements
 /// ---------------------
 ///
-/// YDDs implement a `contains` method, as well as a `count` and `isEmpty` property, in the usual
+/// SFDDs implement a `contains` method, as well as a `count` and `isEmpty` property, in the usual
 /// fashion of Swift's collections.
 ///
-///     let factory = YDDFactory<Int>()
+///     let factory = Factory<Int>()
 ///     let family = factory.make([1, 2], [1])
 ///     print(family.count)
 ///     // Prints "2"
-public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
+public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
 
     public let key : Key!
-    public let take: YDD!
-    public let skip: YDD!
+    public let take: SFDD!
+    public let skip: SFDD!
 
-    public unowned let factory: YDDFactory<Key>
+    public unowned let factory: Factory<Key>
 
     public let count: Int
 
@@ -85,12 +85,12 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
         hasher.combine(count)
     }
 
-    /// Returns `true` if these YDDs contain the same elements.
-    public static func ==(lhs: YDD, rhs: YDD) -> Bool {
+    /// Returns `true` if these SFDDs contain the same elements.
+    public static func ==(lhs: SFDD, rhs: SFDD) -> Bool {
         return lhs === rhs
     }
 
-    /// Returns `true` if the YDD contains the given element.
+    /// Returns `true` if the SFDD contains the given element.
     public func contains(_ element: Set<Key>) -> Bool {
         if element.count == 0 {
             return self.skipMost.isOne
@@ -114,8 +114,8 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
         return keys.isEmpty && node.skipMost.isOne
     }
 
-    /// Returns the union of this YDD with another one.
-    public func union(_ other: YDD) -> YDD {
+    /// Returns the union of this SFDD with another one.
+    public func union(_ other: SFDD) -> SFDD {
         if self.isZero || (self === other) {
             return other
         } else if other.isZero {
@@ -126,7 +126,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
         if let result = self.factory.unionCache[cacheKey] {
             return result
         }
-        let result: YDD
+        let result: SFDD
 
         if self.isOne {
             result = self.factory.makeNode(
@@ -164,8 +164,8 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
 // FIXME
 #if !os(Linux)
 
-    /// Returns the union of this YDD with multiple other ones.
-    public func union<S>(_ others: S) -> YDD where S: Sequence, S.Element == YDD {
+    /// Returns the union of this SFDD with multiple other ones.
+    public func union<S>(_ others: S) -> SFDD where S: Sequence, S.Element == SFDD {
         var operands = Set(others.filter({ !$0.isZero }))
 
         if operands.isEmpty {
@@ -183,7 +183,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
         if let result = self.factory.unionCache[cacheKey] {
             return result
         }
-        let result: YDD
+        let result: SFDD
 
         var results = operands.remove(self.factory.one).map({ [$0] }) ?? []
         let groups  = Dictionary(grouping: operands, by: { $0.key })
@@ -215,8 +215,8 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
         return result
     }
 
-    /// Returns the union of this YDD with another family of sets.
-    public func union<S>(_ other: S) -> YDD
+    /// Returns the union of this SFDD with another family of sets.
+    public func union<S>(_ other: S) -> SFDD
         where S: Sequence, S.Element: Sequence, S.Element.Element == Key
     {
         return self.union(self.factory.make(other))
@@ -224,8 +224,8 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
 
 #endif
 
-    /// Returns the intersection of this YDD with another one.
-    public func intersection(_ other: YDD) -> YDD {
+    /// Returns the intersection of this SFDD with another one.
+    public func intersection(_ other: SFDD) -> SFDD {
         if self.isZero || (self === other) {
             return self
         } else if other.isZero {
@@ -236,7 +236,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
         if let result = self.factory.intersectionCache[cacheKey] {
             return result
         }
-        let result: YDD
+        let result: SFDD
 
         if self.isOne {
             result = other.skipMost
@@ -261,16 +261,16 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
 
 // FIXME
 #if !os(Linux)
-    /// Returns the intersection of this YDD with another family of sets.
-    public func intersection<S>(_ other: S) -> YDD
+    /// Returns the intersection of this SFDD with another family of sets.
+    public func intersection<S>(_ other: S) -> SFDD
         where S: Sequence, S.Element: Sequence, S.Element.Element == Key
     {
         return self.intersection(self.factory.make(other))
     }
 #endif
 
-    /// Returns the symmetric difference between this YDD and another one.
-    public func symmetricDifference(_ other: YDD) -> YDD {
+    /// Returns the symmetric difference between this SFDD and another one.
+    public func symmetricDifference(_ other: SFDD) -> SFDD {
         if self.isZero {
             return other
         } else if other.isZero {
@@ -283,7 +283,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
         if let result = self.factory.symmetricDifferenceCache[cacheKey] {
             return result
         }
-        let result: YDD
+        let result: SFDD
 
         if self.isOne {
             result = self.factory.makeNode(
@@ -320,16 +320,16 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
 
 // FIXME
 #if !os(Linux)
-    /// Returns the symmetric difference between this YDD and another family of sets.
-    public func symmetricDifference<S>(_ other: S) -> YDD
+    /// Returns the symmetric difference between this SFDD and another family of sets.
+    public func symmetricDifference<S>(_ other: S) -> SFDD
         where S: Sequence, S.Element: Sequence, S.Element.Element == Key
     {
         return self.symmetricDifference(self.factory.make(other))
     }
 #endif
 
-    /// Returns the result of subtracting another YDD to this one.
-    public func subtracting(_ other: YDD) -> YDD {
+    /// Returns the result of subtracting another SFDD to this one.
+    public func subtracting(_ other: SFDD) -> SFDD {
         if self.isZero || other.isZero {
             return self
         } else if (self === other) {
@@ -340,7 +340,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
         if let result = self.factory.subtractionCache[cacheKey] {
             return result
         }
-        let result: YDD
+        let result: SFDD
 
         if self.isOne {
             result = other.skipMost.isZero
@@ -373,15 +373,15 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
 
 // FIXME
 #if !os(Linux)
-    /// Returns the result of subtracting another family of sets to this YDD.
-    public func subtracting<S>(_ other: S) -> YDD
+    /// Returns the result of subtracting another family of sets to this SFDD.
+    public func subtracting<S>(_ other: S) -> SFDD
         where S: Sequence, S.Element: Sequence, S.Element.Element == Key
     {
         return self.subtracting(self.factory.make(other))
     }
 #endif
 
-    init(key: Key, take: YDD, skip: YDD, factory: YDDFactory<Key>) {
+    init(key: Key, take: SFDD, skip: SFDD, factory: Factory<Key>) {
         self.key     = key
         self.take    = take
         self.skip    = skip
@@ -389,7 +389,7 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
         self.count   = self.take.count + self.skip.count
     }
 
-    init(factory: YDDFactory<Key>, count: Int) {
+    init(factory: Factory<Key>, count: Int) {
         self.key     = nil
         self.take    = nil
         self.skip   = nil
@@ -397,14 +397,14 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
         self.count   = count
     }
 
-    static func areEqual(_ lhs: YDD, _ rhs: YDD) -> Bool {
+    static func areEqual(_ lhs: SFDD, _ rhs: SFDD) -> Bool {
         return (lhs.key   == rhs.key)
             && (lhs.count == rhs.count)
             && (lhs.take  == rhs.take)
             && (lhs.skip  == rhs.skip)
     }
 
-    private var skipMost: YDD {
+    private var skipMost: SFDD {
         var result = self
         while !result.isTerminal {
             result = result.skip
@@ -414,15 +414,15 @@ public final class YDD<Key>: Hashable where Key: Comparable & Hashable {
 
 }
 
-extension YDD: Sequence {
+extension SFDD: Sequence {
 
     public func makeIterator() -> AnyIterator<Set<Key>> {
         // Implementation note: The iteration process sees the DD as a tree, and explores all his
         // nodes with a in-order traversal. During this traversal, we store all the keys of the
         // "take" parents, so that we can produce an item whenever we reach the one terminal.
 
-        var stack        : [YDD] = []
-        var node         : YDD!  = self
+        var stack        : [SFDD] = []
+        var node         : SFDD!  = self
         var partialResult: [Key] = []
 
         return AnyIterator {
@@ -451,7 +451,7 @@ extension YDD: Sequence {
 
 }
 
-extension YDD: CustomStringConvertible {
+extension SFDD: CustomStringConvertible {
 
     public var description: String {
         let contentDescription = self
@@ -464,7 +464,7 @@ extension YDD: CustomStringConvertible {
 
 }
 
-extension YDD: CustomDebugStringConvertible {
+extension SFDD: CustomDebugStringConvertible {
 
     public var debugDescription: String {
         return self.makeDebugDescription(indent: 0).joined(separator: "\n")

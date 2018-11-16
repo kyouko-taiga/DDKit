@@ -1,6 +1,6 @@
 import XCTest
 import Homomorphisms
-@testable import YDD
+@testable import SFDD
 
 struct Color: Comparable, Hashable {
 
@@ -24,11 +24,11 @@ struct Color: Comparable, Hashable {
 
 }
 
-class YDDHomomorphismsTests: XCTestCase {
+class SFDDHomomorphismsTests: XCTestCase {
 
     func testInsert() {
-        let factory    = YDDFactory<Int>()
-        let homFactory = YDDHomomorphismFactory<Int>()
+        let factory    = Factory<Int>()
+        let homFactory = SFDDHomomorphismFactory<Int>()
 
         let phi0 = homFactory.makeInsert([2])
         XCTAssertEqual(phi0.apply(on: factory.zero)     , factory.zero)
@@ -46,8 +46,8 @@ class YDDHomomorphismsTests: XCTestCase {
     }
 
     func testRemove() {
-        let factory    = YDDFactory<Int>()
-        let homFactory = YDDHomomorphismFactory<Int>()
+        let factory    = Factory<Int>()
+        let homFactory = SFDDHomomorphismFactory<Int>()
 
         let phi0 = homFactory.makeRemove([2])
         XCTAssertEqual(phi0.apply(on: factory.zero)        , factory.zero)
@@ -67,8 +67,8 @@ class YDDHomomorphismsTests: XCTestCase {
     }
 
     func testFilter() {
-        let factory    = YDDFactory<Int>()
-        let homFactory = YDDHomomorphismFactory<Int>()
+        let factory    = Factory<Int>()
+        let homFactory = SFDDHomomorphismFactory<Int>()
 
         let phi0 = homFactory.makeFilter(containing: [1, 3])
         XCTAssertEqual(phi0.apply(on: factory.zero)        , factory.zero)
@@ -81,8 +81,8 @@ class YDDHomomorphismsTests: XCTestCase {
     }
 
     func testInductive() {
-        let factory    = YDDFactory<Color>()
-        let homFactory = YDDHomomorphismFactory<Color>()
+        let factory    = Factory<Color>()
+        let homFactory = SFDDHomomorphismFactory<Color>()
 
         let colorSets = factory.make([
             [Color.lightGray],

@@ -1,8 +1,8 @@
 import Homomorphisms
 
-extension YDD: ImmutableSetAlgebra {}
+extension SFDD: ImmutableSetAlgebra {}
 
-public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactory<YDD<Key>>
+public final class SFDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactory<SFDD<Key>>
     where Key: Comparable & Hashable
 {
 
@@ -24,25 +24,25 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
         return self.ensureUnique(Filter(containing: keys, factory: self)) as! Filter
     }
 
-    public func makeDive(to key: Key, beforeApplying phi: Homomorphism<YDD<Key>>) -> Dive<Key> {
+    public func makeDive(to key: Key, beforeApplying phi: Homomorphism<SFDD<Key>>) -> Dive<Key> {
         return self.ensureUnique(Dive(to: key, beforeApplying: phi, factory: self)) as! Dive
     }
 
     public func makeInductive(
-        substitutingOneWith substitute: YDD<Key>? = nil,
-        applying fn: @escaping (Homomorphism<YDD<Key>>, YDD<Key>) -> Inductive<Key>.Result)
+        substitutingOneWith substitute: SFDD<Key>? = nil,
+        applying fn: @escaping (Homomorphism<SFDD<Key>>, SFDD<Key>) -> Inductive<Key>.Result)
         -> Inductive<Key>
     {
         return self.ensureUnique(
             Inductive(factory: self, substitutingOneWith: substitute, applying: fn)) as! Inductive
     }
 
-    public func optimize(_ phi: Homomorphism<YDD<Key>>) -> Homomorphism<YDD<Key>> {
+    public func optimize(_ phi: Homomorphism<SFDD<Key>>) -> Homomorphism<SFDD<Key>> {
         switch phi {
-        case let h as Union<YDD<Key>>       : return self.optimize(h)
-        case let h as Intersection<YDD<Key>>: return self.optimize(h)
-        case let h as Composition<YDD<Key>> : return self.optimize(h)
-        case let h as FixedPoint<YDD<Key>>  : return self.optimize(h)
+        case let h as Union<SFDD<Key>>       : return self.optimize(h)
+        case let h as Intersection<SFDD<Key>>: return self.optimize(h)
+        case let h as Composition<SFDD<Key>> : return self.optimize(h)
+        case let h as FixedPoint<SFDD<Key>>  : return self.optimize(h)
         case let h as Insert<Key>           : return self.optimize(h)
         case let h as Remove<Key>           : return self.optimize(h)
         case let h as Filter<Key>           : return self.optimize(h)
@@ -50,7 +50,7 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
         }
     }
 
-    public func optimize(_ phi: Union<YDD<Key>>) -> Homomorphism<YDD<Key>> {
+    public func optimize(_ phi: Union<SFDD<Key>>) -> Homomorphism<SFDD<Key>> {
         guard phi.homomorphisms.count > 1 else {
             return phi.homomorphisms.isEmpty
                 ? phi
@@ -63,7 +63,7 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
             } ?? rho
     }
 
-    public func optimize(_ phi: Intersection<YDD<Key>>) -> Homomorphism<YDD<Key>> {
+    public func optimize(_ phi: Intersection<SFDD<Key>>) -> Homomorphism<SFDD<Key>> {
         guard phi.homomorphisms.count > 1 else {
             return phi.homomorphisms.isEmpty
                 ? phi
@@ -76,14 +76,14 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
             } ?? rho
     }
 
-    public func optimize(_ phi: Composition<YDD<Key>>) -> Homomorphism<YDD<Key>> {
+    public func optimize(_ phi: Composition<SFDD<Key>>) -> Homomorphism<SFDD<Key>> {
         guard phi.homomorphisms.count > 1 else {
             return phi.homomorphisms.isEmpty
                 ? phi
                 : phi.homomorphisms.first!
         }
 
-        var homs: [Homomorphism<YDD<Key>>] = []
+        var homs: [Homomorphism<SFDD<Key>>] = []
         for hom in phi.homomorphisms {
             let optimized = self.optimize(hom)
             if let dive = optimized as? Dive, let composition = dive.phi as? Composition {
@@ -130,20 +130,20 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
             : homs.first!
     }
 
-    public func optimize(_ phi: FixedPoint<YDD<Key>>) -> Homomorphism<YDD<Key>> {
+    public func optimize(_ phi: FixedPoint<SFDD<Key>>) -> Homomorphism<SFDD<Key>> {
         let rho = self.optimize(phi.phi)
-        if let union = rho as? Union<YDD<Key>> {
+        if let union = rho as? Union<SFDD<Key>> {
             let id = self.makeIdentity()
             if union.homomorphisms.contains(id) {
                 return self.makeComposition(union.homomorphisms.map({
-                    ($0 | id)* as Homomorphism<YDD<Key>>
+                    ($0 | id)* as Homomorphism<SFDD<Key>>
                 }))
             }
         }
         return self.makeFixedPoint(rho)
     }
 
-    public func optimize(_ phi: Insert<Key>) -> Homomorphism<YDD<Key>> {
+    public func optimize(_ phi: Insert<Key>) -> Homomorphism<SFDD<Key>> {
         guard phi.keys.count > 1 else { return phi }
         return self.makeDive(
             to            : phi.keys.min()!,
@@ -151,7 +151,7 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
                 phi.keys.map({ self.makeInsert([$0]) })))
     }
 
-    public func optimize(_ phi: Remove<Key>) -> Homomorphism<YDD<Key>> {
+    public func optimize(_ phi: Remove<Key>) -> Homomorphism<SFDD<Key>> {
         guard phi.keys.count > 1 else { return phi }
         return self.makeDive(
             to            : phi.keys.min()!,
@@ -159,7 +159,7 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
                 phi.keys.map({ self.makeRemove([$0]) })))
     }
 
-    public func optimize(_ phi: Filter<Key>) -> Homomorphism<YDD<Key>> {
+    public func optimize(_ phi: Filter<Key>) -> Homomorphism<SFDD<Key>> {
         guard phi.keys.count > 1 else { return phi }
         return self.makeDive(
             to            : phi.keys.min()!,
@@ -167,12 +167,12 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
                 phi.keys.map({ self.makeFilter(containing: [$0]) })))
     }
 
-    private func highestKey(of phi: Homomorphism<YDD<Key>>) -> Key? {
+    private func highestKey(of phi: Homomorphism<SFDD<Key>>) -> Key? {
         switch phi {
-        case let constant as Constant<YDD<Key>>:
+        case let constant as Constant<SFDD<Key>>:
             return constant.constant.key
 
-        case let union as Union<YDD<Key>>:
+        case let union as Union<SFDD<Key>>:
             var result: [Key] = []
             for rho in union.homomorphisms {
                 guard let k = self.highestKey(of: rho) else { return nil }
@@ -180,7 +180,7 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
             }
             return result.min()
 
-        case let intersection as Intersection<YDD<Key>>:
+        case let intersection as Intersection<SFDD<Key>>:
             var result: [Key] = []
             for rho in intersection.homomorphisms {
                 guard let k = self.highestKey(of: rho) else { return nil }
@@ -188,7 +188,7 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
             }
             return result.min()
 
-        case let composition as Composition<YDD<Key>>:
+        case let composition as Composition<SFDD<Key>>:
             var result: [Key] = []
             for rho in composition.homomorphisms {
                 guard let k = self.highestKey(of: rho) else { return nil }
@@ -196,7 +196,7 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
             }
             return result.min()
 
-        case let fixedPoint as FixedPoint<YDD<Key>>:
+        case let fixedPoint as FixedPoint<SFDD<Key>>:
             return self.highestKey(of: fixedPoint.phi)
 
         case let insert as Insert<Key>:
@@ -218,9 +218,9 @@ public final class YDDHomomorphismFactory<Key>: Homomorphisms.HomomorphismFactor
 
 }
 
-public final class Insert<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Hashable {
+public final class Insert<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & Hashable {
 
-    public init<S>(_ keys: @autoclosure () -> S, factory: YDDHomomorphismFactory<Key>)
+    public init<S>(_ keys: @autoclosure () -> S, factory: SFDDHomomorphismFactory<Key>)
         where S: Sequence, S.Element == Key
     {
         self.keys = Array(keys()).sorted()
@@ -229,12 +229,12 @@ public final class Insert<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
 
     public let keys: [Key]
 
-    public override func applyUncached(on y: YDD<Key>) -> YDD<Key> {
+    public override func applyUncached(on y: SFDD<Key>) -> SFDD<Key> {
         guard !y.isZero && !self.keys.isEmpty else { return y }
 
         let factory  = y.factory
         let followup = self.keys.count > 1
-            ? (self.factory as! YDDHomomorphismFactory).makeInsert(self.keys.dropFirst())
+            ? (self.factory as! SFDDHomomorphismFactory).makeInsert(self.keys.dropFirst())
             : nil
 
         if y.isOne {
@@ -261,7 +261,7 @@ public final class Insert<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
     }
 
 
-    public override func isEqual(to other: Homomorphism<YDD<Key>>) -> Bool {
+    public override func isEqual(to other: Homomorphism<SFDD<Key>>) -> Bool {
         return (other as? Insert).map {
             self.keys == $0.keys
         } ?? false
@@ -275,9 +275,9 @@ public final class Insert<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
 
 }
 
-public final class Remove<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Hashable {
+public final class Remove<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & Hashable {
 
-    public init<S>(_ keys: @autoclosure () -> S, factory: YDDHomomorphismFactory<Key>)
+    public init<S>(_ keys: @autoclosure () -> S, factory: SFDDHomomorphismFactory<Key>)
         where S: Sequence, S.Element == Key
     {
         self.keys = Array(keys()).sorted()
@@ -286,12 +286,12 @@ public final class Remove<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
 
     public let keys: [Key]
 
-    public override func applyUncached(on y: YDD<Key>) -> YDD<Key> {
+    public override func applyUncached(on y: SFDD<Key>) -> SFDD<Key> {
         guard !y.isTerminal && !self.keys.isEmpty else { return y }
 
         let factory  = y.factory
         let followup = self.keys.count > 1
-            ? (self.factory as! YDDHomomorphismFactory).makeRemove(self.keys.dropFirst())
+            ? (self.factory as! SFDDHomomorphismFactory).makeRemove(self.keys.dropFirst())
             : nil
 
         if y.key < self.keys.first! {
@@ -306,7 +306,7 @@ public final class Remove<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
         }
     }
 
-    public override func isEqual(to other: Homomorphism<YDD<Key>>) -> Bool {
+    public override func isEqual(to other: Homomorphism<SFDD<Key>>) -> Bool {
         return (other as? Remove).map {
             self.keys == $0.keys
         } ?? false
@@ -320,9 +320,9 @@ public final class Remove<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
 
 }
 
-public final class Filter<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Hashable {
+public final class Filter<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & Hashable {
 
-    public init<S>(containing keys: @autoclosure () -> S, factory: YDDHomomorphismFactory<Key>)
+    public init<S>(containing keys: @autoclosure () -> S, factory: SFDDHomomorphismFactory<Key>)
         where S: Sequence, S.Element == Key
     {
         self.keys = Array(keys()).sorted()
@@ -331,13 +331,13 @@ public final class Filter<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
 
     public let keys: [Key]
 
-    public override func applyUncached(on y: YDD<Key>) -> YDD<Key> {
+    public override func applyUncached(on y: SFDD<Key>) -> SFDD<Key> {
         guard !self.keys.isEmpty else { return y }
         guard !y.isTerminal      else { return y.factory.zero }
 
         let factory  = y.factory
         let followup = self.keys.count > 1
-            ? (self.factory as! YDDHomomorphismFactory).makeFilter(containing: self.keys.dropFirst())
+            ? (self.factory as! SFDDHomomorphismFactory).makeFilter(containing: self.keys.dropFirst())
             : nil
 
         if y.key < self.keys.first! {
@@ -355,7 +355,7 @@ public final class Filter<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
         }
     }
 
-    public override func isEqual(to other: Homomorphism<YDD<Key>>) -> Bool {
+    public override func isEqual(to other: Homomorphism<SFDD<Key>>) -> Bool {
         return (other as? Filter).map {
             self.keys == $0.keys
         } ?? false
@@ -369,12 +369,12 @@ public final class Filter<Key>: Homomorphism<YDD<Key>> where Key: Comparable & H
 
 }
 
-public final class Dive<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Hashable {
+public final class Dive<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & Hashable {
 
     public init(
         to key: Key,
-        beforeApplying phi: Homomorphism<YDD<Key>>,
-        factory: YDDHomomorphismFactory<Key>)
+        beforeApplying phi: Homomorphism<SFDD<Key>>,
+        factory: SFDDHomomorphismFactory<Key>)
     {
         self.key = key
         self.phi = phi
@@ -382,9 +382,9 @@ public final class Dive<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Has
     }
 
     public let key: Key
-    public let phi: Homomorphism<YDD<Key>>
+    public let phi: Homomorphism<SFDD<Key>>
 
-    public override func applyUncached(on y: YDD<Key>) -> YDD<Key> {
+    public override func applyUncached(on y: SFDD<Key>) -> SFDD<Key> {
         guard !y.isTerminal else { return y }
 
         let factory = y.factory
@@ -401,7 +401,7 @@ public final class Dive<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Has
         }
     }
 
-    public override func isEqual(to other: Homomorphism<YDD<Key>>) -> Bool {
+    public override func isEqual(to other: Homomorphism<SFDD<Key>>) -> Bool {
         return (other as? Dive).map {
             (self.key == $0.key) && (self.phi == $0.phi)
             } ?? false
@@ -417,24 +417,24 @@ public final class Dive<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Has
 /// - Note: Swift's functions and closures aren't equatable. Therefore we can't use properties
 ///   to discriminate between instances of the `Inductive` homomorphism. Instead, we rely on
 ///   reference equality (as defined in the base class).
-public final class Inductive<Key>: Homomorphism<YDD<Key>> where Key: Comparable & Hashable {
+public final class Inductive<Key>: Homomorphism<SFDD<Key>> where Key: Comparable & Hashable {
 
-    public typealias Result = (take: Homomorphism<YDD<Key>>, skip: Homomorphism<YDD<Key>>)
+    public typealias Result = (take: Homomorphism<SFDD<Key>>, skip: Homomorphism<SFDD<Key>>)
 
     public init(
-        factory: YDDHomomorphismFactory<Key>,
-        substitutingOneWith substitute: YDD<Key>? = nil,
-        applying fn: @escaping (Homomorphism<YDD<Key>>, YDD<Key>) -> Result)
+        factory: SFDDHomomorphismFactory<Key>,
+        substitutingOneWith substitute: SFDD<Key>? = nil,
+        applying fn: @escaping (Homomorphism<SFDD<Key>>, SFDD<Key>) -> Result)
     {
         self.substitute = substitute
         self.fn         = fn
         super.init(factory: factory)
     }
 
-    public let substitute: YDD<Key>?
-    public let fn        : (Homomorphism<YDD<Key>>, YDD<Key>) -> Result
+    public let substitute: SFDD<Key>?
+    public let fn        : (Homomorphism<SFDD<Key>>, SFDD<Key>) -> Result
 
-    public override func applyUncached(on y: YDD<Key>) -> YDD<Key> {
+    public override func applyUncached(on y: SFDD<Key>) -> SFDD<Key> {
         guard !y.isZero else { return y }
         guard !y.isOne  else { return self.substitute ?? y }
 
@@ -451,4 +451,3 @@ public final class Inductive<Key>: Homomorphism<YDD<Key>> where Key: Comparable 
     }
 
 }
-
