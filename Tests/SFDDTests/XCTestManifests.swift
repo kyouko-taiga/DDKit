@@ -1,6 +1,6 @@
 import XCTest
 
-extension YDDHomomorphismsTests {
+extension SFDDHomomorphismsTests {
     static let __allTests = [
         ("testFilter", testFilter),
         ("testInductive", testInductive),
@@ -9,7 +9,7 @@ extension YDDHomomorphismsTests {
     ]
 }
 
-extension YDDTests {
+extension SFDDTests {
     static let __allTests = [
         ("testAsSequence", testAsSequence),
         ("testContains", testContains),
@@ -25,8 +25,8 @@ extension YDDTests {
 #if !os(macOS)
 public func __allTests() -> [XCTestCaseEntry] {
     return [
-        testCase(YDDHomomorphismsTests.__allTests),
-        testCase(YDDTests.__allTests),
+        testCase(SFDDHomomorphismsTests.__allTests),
+        testCase(SFDDTests.__allTests),
     ]
 }
 #endif

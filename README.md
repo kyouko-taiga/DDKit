@@ -11,9 +11,8 @@ and support efficient operations to manipulate multiple elements at once.
 
 ## Provided Implementations
 
-- [ ] Binary Decision Diagrams (BDDs)
-- [x] Yet another Decision Diagrams (YDDs)
-- [x] Map Family Decision Diagrams (YDDs)
+- [x] Set Family Decision Diagrams (SFDDs)
+- [x] Map Family Decision Diagrams (SFDDs)
 - [ ] Data Decision Diagrams (DDDs)
 - [ ] Sigma Decision Diagrams (ΣDDs)
 
@@ -49,7 +48,7 @@ import PackageDescription
 let package = Package(
   // ...
   targets: [
-    .target(name: "MyTarget", dependencies: ["YDD"]),
+    .target(name: "MyTarget", dependencies: ["SFDD"]),
   ],
   // ...
 )
@@ -58,9 +57,9 @@ let package = Package(
 You'll then be able to import DDKit's symbol into your sources:
 
 ```swift
-import YDD
+import SFDD
 
-let factory = YDDFactory<String>()
+let factory = Factory<String>()
 ```
 
 ## License

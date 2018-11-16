@@ -1,10 +1,10 @@
 import XCTest
-@testable import YDD
+@testable import SFDD
 
-class YDDTests: XCTestCase {
+class SFDDTests: XCTestCase {
 
     func testCount() {
-        let factory = YDDFactory<Int>()
+        let factory = Factory<Int>()
 
         XCTAssertEqual(0, factory.zero.count)
         XCTAssertEqual(1, factory.one.count)
@@ -14,7 +14,7 @@ class YDDTests: XCTestCase {
     }
 
     func testEquates() {
-        let factory = YDDFactory<Int>()
+        let factory = Factory<Int>()
 
         XCTAssertEqual(factory.zero        , factory.zero)
         XCTAssertEqual(factory.one         , factory.one)
@@ -23,8 +23,8 @@ class YDDTests: XCTestCase {
     }
 
     func testContains() {
-        let factory = YDDFactory<Int>()
-        var family: YDD<Int>
+        let factory = Factory<Int>()
+        var family: SFDD<Int>
 
         family = factory.zero
         XCTAssertFalse(family.contains([]))
@@ -48,7 +48,7 @@ class YDDTests: XCTestCase {
     }
 
     func testUnion() {
-        let factory = YDDFactory<Int>()
+        let factory = Factory<Int>()
 
         // Union of two empty families.
         let eue = factory.make([]).union(factory.make([]))
@@ -79,7 +79,7 @@ class YDDTests: XCTestCase {
     }
 
     func testIntersection() {
-        let factory = YDDFactory<Int>()
+        let factory = Factory<Int>()
 
         // Intersection of two empty families.
         let eue = factory.make([]).intersection(factory.make([]))
@@ -121,7 +121,7 @@ class YDDTests: XCTestCase {
     }
 
     func testSymmetricDifference() {
-        let factory = YDDFactory<Int>()
+        let factory = Factory<Int>()
 
         // Symmetric difference between two empty families.
         let ese = factory.make([]).symmetricDifference(factory.make([]))
@@ -147,7 +147,7 @@ class YDDTests: XCTestCase {
     }
 
     func testSubtracting() {
-        let factory = YDDFactory<Int>()
+        let factory = Factory<Int>()
 
         // Subtraction between two empty families.
         let ese = factory.make([]).subtracting(factory.make([]))
@@ -171,7 +171,7 @@ class YDDTests: XCTestCase {
     }
 
     func testAsSequence() {
-        let factory = YDDFactory<Int>()
+        let factory = Factory<Int>()
 
         XCTAssertEqual(Set(factory.zero), Set())
         XCTAssertEqual(Set(factory.one) , Set([[]]))
