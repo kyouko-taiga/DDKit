@@ -1,12 +1,13 @@
 import XCTest
 @testable import Homomorphisms
 
-class HomomorphismsTests: XCTestCase {
+extension Set: ImmutableSetAlgebra {}
 
+class HomomorphismsTests: XCTestCase {
 
     func testIdentity() {
         let factory = HomomorphismFactory<Set<Int>>()
-        let phi     = factory.makeIdentity()
+        let phi = factory.makeIdentity()
         XCTAssertEqual(phi.apply(on: [])    , [])
         XCTAssertEqual(phi.apply(on: [1])   , [1])
         XCTAssertEqual(phi.apply(on: [1, 2]), [1, 2])
@@ -14,7 +15,7 @@ class HomomorphismsTests: XCTestCase {
 
     func testConstant() {
         let factory = HomomorphismFactory<Set<Int>>()
-        let phi     = factory.makeConstant(Set([2, 3]))
+        let phi = factory.makeConstant(Set([2, 3]))
         XCTAssertEqual(phi.apply(on: [])    , [2, 3])
         XCTAssertEqual(phi.apply(on: [1])   , [2, 3])
         XCTAssertEqual(phi.apply(on: [1, 2]), [2, 3])
@@ -70,7 +71,7 @@ class HomomorphismsTests: XCTestCase {
 
     func testFixedPoint() {
         let factory = HomomorphismFactory<Set<Int>>()
-        let phi     = (factory.makeConstant(Set([2, 3])) | factory.makeIdentity())*
+        let phi = (factory.makeConstant(Set([2, 3])) | factory.makeIdentity())*
         XCTAssertEqual(phi.apply(on: [])    , [2, 3])
         XCTAssertEqual(phi.apply(on: [1])   , [1, 2, 3])
         XCTAssertEqual(phi.apply(on: [1, 2]), [1, 2, 3])

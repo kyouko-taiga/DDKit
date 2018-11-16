@@ -1,30 +1,6 @@
 infix   operator °: NilCoalescingPrecedence
 postfix operator *
 
-public protocol ImmutableSetAlgebra: Hashable {
-
-    func union(_ other: Self) -> Self
-    func union<S>(_ others: S) -> Self where S: Sequence, S.Element == Self
-
-    func intersection(_ other: Self) -> Self
-    func intersection<S>(_ other: S) -> Self where S: Sequence, S.Element == Self
-
-}
-
-extension ImmutableSetAlgebra {
-
-    public func union<S>(_ others: S) -> Self where S: Sequence, S.Element == Self {
-        return others.reduce(self, { $0.union($1) })
-    }
-
-    public func intersection<S>(_ others: S) -> Self where S: Sequence, S.Element == Self {
-        return others.reduce(self, { $0.intersection($1) })
-    }
-
-}
-
-extension Set: ImmutableSetAlgebra {}
-
 open class Homomorphism<S>: Hashable where S: ImmutableSetAlgebra {
 
     public init(factory: HomomorphismFactory<S>) {

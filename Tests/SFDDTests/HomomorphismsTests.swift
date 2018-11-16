@@ -114,11 +114,4 @@ class SFDDHomomorphismsTests: XCTestCase {
         XCTAssertEqual(phi1.apply(on: colorSets)   , graySets)
     }
 
-    static var allTests = [
-        ("testInsert"   , testInsert),
-        ("testRemove"   , testRemove),
-        ("testFilter"   , testFilter),
-        ("testInductive", testInductive),
-    ]
-
 }

@@ -187,15 +187,4 @@ class SFDDTests: XCTestCase {
             Set([Set([1, 2]), Set([1, 2, 3])]))
     }
 
-    static var allTests = [
-        ("testCount"              , testCount),
-        ("testEquates"            , testEquates),
-        ("testContains"           , testContains),
-        ("testUnion"              , testUnion),
-        ("testIntersection"       , testIntersection),
-        ("testSymmetricDifference", testSymmetricDifference),
-        ("testSubtracting"        , testSubtracting),
-        ("testAsSequence"         , testAsSequence),
-    ]
-
 }
