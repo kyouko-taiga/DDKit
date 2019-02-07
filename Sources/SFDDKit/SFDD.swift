@@ -139,7 +139,7 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
       return self
     }
 
-    let cacheKey: CacheKey = .set([self, other])
+    let cacheKey = [self, other].sorted(by: { $0.hashValue < $1.hashValue })
     if let result = self.factory.unionCache[cacheKey] {
       return result
     }
@@ -193,7 +193,7 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
       return operands.first!
     }
 
-    let cacheKey: CacheKey = .set(operands)
+    let cacheKey = operands.sorted(by: { $0.hashValue < $1.hashValue })
     if let result = self.factory.unionCache[cacheKey] {
       return result
     }
@@ -245,7 +245,7 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
       return other
     }
 
-    let cacheKey: CacheKey = .set([self, other])
+    let cacheKey = [self, other].sorted(by: { $0.hashValue < $1.hashValue })
     if let result = self.factory.intersectionCache[cacheKey] {
       return result
     }
@@ -289,7 +289,7 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
       return self.factory.zero
     }
 
-    let cacheKey: CacheKey = .set([self, other])
+    let cacheKey = [self, other].sorted(by: { $0.hashValue < $1.hashValue })
     if let result = self.factory.symmetricDifferenceCache[cacheKey] {
       return result
     }
@@ -343,7 +343,7 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
       return self.factory.zero
     }
 
-    let cacheKey: CacheKey = .list([self, other])
+    let cacheKey = [self, other]
     if let result = self.factory.subtractionCache[cacheKey] {
       return result
     }
