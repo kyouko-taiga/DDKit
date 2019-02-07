@@ -1,3 +1,5 @@
+import Utils
+
 /// A SFDD Node.
 ///
 /// Yet another Decision Diagrams (SFDDs) are structures capable of representing large families of
@@ -65,6 +67,26 @@
 ///     // Prints "2"
 public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
 
+  init(key: Key, take: SFDD, skip: SFDD, factory: Factory<Key>) {
+    self.key     = key
+    self.take    = take
+    self.skip    = skip
+    self.factory = factory
+    self.count   = self.take.count + self.skip.count
+
+    self.hashValue = fnv1(data: [key.hashValue, take.hashValue, skip.hashValue, count], size: 4)
+  }
+
+  init(factory: Factory<Key>, count: Int) {
+    self.key     = nil
+    self.take    = nil
+    self.skip    = nil
+    self.factory = factory
+    self.count   = count
+
+    self.hashValue = count
+  }
+
   public let key : Key!
   public let take: SFDD!
   public let skip: SFDD!
@@ -78,12 +100,7 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
   public var isTerminal: Bool { return self.isZero || self.isOne }
   public var isEmpty   : Bool { return self.isZero }
 
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(key)
-    hasher.combine(take)
-    hasher.combine(skip)
-    hasher.combine(count)
-  }
+  public let hashValue: Int
 
   /// Returns `true` if these SFDDs contain the same elements.
   public static func ==(lhs: SFDD, rhs: SFDD) -> Bool {
@@ -366,22 +383,6 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
     where S: Sequence, S.Element: Sequence, S.Element.Element == Key
   {
     return self.subtracting(self.factory.make(other))
-  }
-
-  init(key: Key, take: SFDD, skip: SFDD, factory: Factory<Key>) {
-    self.key     = key
-    self.take    = take
-    self.skip    = skip
-    self.factory = factory
-    self.count   = self.take.count + self.skip.count
-  }
-
-  init(factory: Factory<Key>, count: Int) {
-    self.key     = nil
-    self.take    = nil
-    self.skip   = nil
-    self.factory = factory
-    self.count   = count
   }
 
   static func areEqual(_ lhs: SFDD, _ rhs: SFDD) -> Bool {
