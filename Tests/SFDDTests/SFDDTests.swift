@@ -93,7 +93,7 @@ class SFDDTests: XCTestCase {
     let overlappingFamilies = [
       ([[1, 3, 9], [0, 2, 4]], [[1, 3, 9], [5, 6, 7]]),
       ([[1, 3, 9], [5, 6, 7]], [[1, 3, 9], [0, 2, 4]]),
-      ]
+    ]
     for (fa, fb) in overlappingFamilies {
       let a   = factory.make(fa)
       let b   = factory.make(fb)
@@ -108,7 +108,7 @@ class SFDDTests: XCTestCase {
     let disjointFamilies = [
       ([[1, 3, 9], [0, 2, 4]], [[1, 3, 0], [5, 6, 7]]),
       ([[1, 3, 0], [5, 6, 7]], [[1, 3, 9], [0, 2, 4]]),
-      ]
+    ]
     for (fa, fb) in disjointFamilies {
       let a   = factory.make(fa)
       let b   = factory.make(fb)
