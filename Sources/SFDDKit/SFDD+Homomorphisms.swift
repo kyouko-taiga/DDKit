@@ -95,34 +95,53 @@ public final class HomomorphismFactory<Key>: Homomorphisms.HomomorphismFactory<S
       }
     }
 
-    var ranges: [Range<Int>] = []
-    var start = 0
-    for (i, hom) in homs.enumerated() {
-      if !(hom is Insert) && !(hom is Remove) {
-        if i - start >= 2 {
-          ranges.append(start ..< i)
-        }
-        start = i + 1
-      }
-    }
-    if homs.count - start >= 2 {
-      ranges.append(start ..< homs.count)
-    }
+    // TODO: Remove canceling pairs of `insert(x) ° remove(x)`.
 
+    // Sort the subsequences of consecutive insert or remove homomorphisms by how deep they dive.
+    let ranges =
+      homs.contiguousRanges(groupedBy: { $0 is Insert }) +
+      homs.contiguousRanges(groupedBy: { $0 is Remove })
     for range in ranges {
       // Sort the insert/remove homomorphisms by how deep they dive into the DD.
       let sorted = homs[range].sorted { (lhs, rhs) in
         self.highestKey(of: lhs)! < self.highestKey(of: rhs)!
       }
+      homs[range] = sorted[0 ..< sorted.count]
+    }
 
-      // TODO: Remove cancelling pairs of `insert(x) ° remove(x)`.
+    // Implementation note:
+    // Here we try to dive as deep as possible on subsequences working on close variables. There's
+    // an heuristic choice as to whether grouping the longest subsequences, or trying to find more
+    // closely related sub-subsequences. As `Comparable` types do not implement a notion of
+    // "distance" between elements, going with the second approach is not possible without adding
+    // more constraints on the keys of a SFDD (e.g. using `Strideable`).
 
-      // Encapsulate homomorphisms working on close variables into `dive` homomorphisms.
-      let dive = self.makeDive(
-        to            : self.highestKey(of: sorted.first!)!,
-        beforeApplying: self.makeComposition(sorted))
+    var rewritten: [Homomorphism<SFDD<Key>>] = []
+    var accumulator: [Homomorphism<SFDD<Key>>] = []
+    var currentHighestKey: Key? = nil
+    for hom in homs {
+      if let k = self.highestKey(of: hom) {
+        currentHighestKey = accumulator.isEmpty
+          ? k
+          : Swift.max(k, currentHighestKey!)
+        accumulator.append(hom)
+      } else {
+        if !accumulator.isEmpty {
+          rewritten.append(self.makeDive(
+            to: currentHighestKey!,
+            beforeApplying: self.makeComposition(accumulator)))
+        }
 
-      homs[range] = [dive]
+        rewritten.append(hom)
+        accumulator = []
+        currentHighestKey = nil
+      }
+    }
+
+    if !accumulator.isEmpty {
+      rewritten.append(self.makeDive(
+        to: currentHighestKey!,
+        beforeApplying: self.makeComposition(accumulator)))
     }
 
     return homs.count > 1
@@ -447,5 +466,27 @@ public final class Inductive<Key>: Homomorphism<SFDD<Key>> where Key: Comparable
   public override var hashValue: Int {
     return self.substitute?.hashValue ?? 0
   }
+
+}
+
+extension Array {
+
+  fileprivate func contiguousRanges(groupedBy predicate: (Element) -> Bool) -> [Range<Int>] {
+    var ranges: [Range<Int>] = []
+    var start = 0
+    for i in 0 ..< self.count {
+      if !predicate(self[i]) {
+        if i - start >= 2 {
+          ranges.append(start ..< i)
+        }
+        start = i + 1
+      }
+    }
+    if self.count - start >= 2 {
+      ranges.append(start ..< self.count)
+    }
+    return ranges
+  }
+
 
 }
