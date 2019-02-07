@@ -5,14 +5,26 @@ public struct WeakSet<Element> where Element: Hashable & AnyObject {
   }
 
   public init() {
-    self.init(minimumCapacity: 100)
+    self.init(minimumCapacity: 1024)
   }
 
   public init<S>(_ sequence: S) where S: Sequence, S.Element == Element {
-    self.init(minimumCapacity: 100)
+    self.init()
     for element in sequence {
       self.insert(element)
     }
+  }
+
+  fileprivate var content: [[WeakSetElement<Element>]]
+  public fileprivate(set) var overestimateCount: Int = 0
+
+  public var isEmpty: Bool {
+    return !self.content.contains(
+      where: { bucket in bucket.contains(where: { $0.containee != nil }) })
+  }
+
+  public var capacity: Int {
+    return self.content.count
   }
 
   @discardableResult
@@ -25,6 +37,7 @@ public struct WeakSet<Element> where Element: Hashable & AnyObject {
     if let containedIndex = self.content[h].index(where: { $0.containee == newMember }) {
       result = (false, self.content[h][containedIndex].containee!)
     } else {
+      overestimateCount += 1
       self.content[h].append(WeakSetElement(containee: newMember))
       result = (true, newMember)
     }
@@ -48,6 +61,7 @@ public struct WeakSet<Element> where Element: Hashable & AnyObject {
     }) {
       result = (false, self.content[h][containedIndex].containee!)
     } else {
+      overestimateCount += 1
       self.content[h].append(WeakSetElement(containee: newMember))
       result = (true, newMember)
     }
@@ -65,6 +79,7 @@ public struct WeakSet<Element> where Element: Hashable & AnyObject {
       result = self.content[h][containedIndex].containee
       self.content[h][containedIndex] = WeakSetElement(containee: newMember)
     } else {
+      overestimateCount += 1
       self.content[h].append(WeakSetElement(containee: newMember))
       result = nil
     }
@@ -77,6 +92,7 @@ public struct WeakSet<Element> where Element: Hashable & AnyObject {
   public mutating func remove(_ member: Element) -> Element? {
     let h = abs(member.hashValue % self.capacity)
     if let containedIndex = self.content[h].index(where: { $0.containee == member }) {
+      overestimateCount -= 1
       return self.content[h].remove(at: containedIndex).containee
     } else {
       return nil
@@ -84,12 +100,14 @@ public struct WeakSet<Element> where Element: Hashable & AnyObject {
   }
 
   public mutating func resize(minimumCapacity: Int? = nil) {
-    let count           = self.count
-    let desiredCapacity = count > Int(Double(self.capacity) * 0.8)
-      ? self.capacity * 2
-      : self.capacity
-    let newCapacity = Swift.max(minimumCapacity ?? 0, desiredCapacity)
-    guard newCapacity != self.capacity else { return }
+    let newCapacity: Int
+    if minimumCapacity != nil {
+      newCapacity = Swift.max(minimumCapacity!, capacity)
+    } else if overestimateCount > Int(Double(capacity) * 0.8) {
+      newCapacity = capacity * 2
+    } else {
+      return
+    }
 
     var newContent: [[WeakSetElement<Element>]] = Array(repeating: [], count: newCapacity)
     for bucket in self.content {
@@ -101,23 +119,6 @@ public struct WeakSet<Element> where Element: Hashable & AnyObject {
     }
     self.content = newContent
   }
-
-  public var isEmpty: Bool {
-    return !self.content.contains(
-      where: { bucket in bucket.contains(where: { $0.containee != nil }) })
-  }
-
-  public var count: Int {
-    return self.content
-      .map({ bucket in bucket.filter({ $0.containee != nil }).count })
-      .reduce(0, +)
-  }
-
-  public var capacity: Int {
-    return self.content.count
-  }
-
-  fileprivate var content: [[WeakSetElement<Element>]]
 
 }
 
@@ -219,6 +220,7 @@ extension WeakSet: SetAlgebra {
         if let element = self.content[bucketIndex][elementIndex].containee,
           isRemoved(element)
         {
+          overestimateCount -= 1
           self.content[bucketIndex].remove(at: elementIndex)
           removed.append(element)
         } else {
@@ -234,29 +236,53 @@ extension WeakSet: SetAlgebra {
 
 }
 
-extension WeakSet: Sequence {
+extension WeakSet: Collection {
 
-  public func makeIterator() -> AnyIterator<Element> {
-    var bucketIndex  = 0
-    var elementIndex = 0
+  public typealias Index = WeakSetIterator
 
-    return AnyIterator {
-      while true {
-        if bucketIndex >= self.content.count {
-          return nil
-        } else if elementIndex >= self.content[bucketIndex].count {
-          bucketIndex += 1
-          elementIndex = 0
-        } else if self.content[bucketIndex][elementIndex].containee == nil {
-          elementIndex += 1
-        } else {
-          break
-        }
+  public var startIndex: Index {
+    return index(after: WeakSetIterator(bucket: 0, entry: -1))
+  }
+
+  public var endIndex: Index {
+    return WeakSetIterator(bucket: content.count, entry: 0)
+  }
+
+  public func index(after i: WeakSetIterator) -> WeakSetIterator {
+    var nextIndex = i
+    while true {
+      nextIndex.entry += 1
+      if nextIndex.entry >= content[nextIndex.bucket].count {
+        nextIndex.bucket += 1
+        nextIndex.entry = 0
       }
 
-      defer { elementIndex += 1 }
-      return self.content[bucketIndex][elementIndex].containee
+      guard nextIndex.bucket < content.count
+        else { return endIndex }
+      guard nextIndex.entry < content[nextIndex.bucket].count
+        else { continue }
+      guard content[nextIndex.bucket][nextIndex.entry].containee != nil
+        else { continue }
+
+      return nextIndex
     }
+  }
+
+  public subscript(i: Index) -> Element {
+    return content[i.bucket][i.entry].containee!
+  }
+
+}
+
+public struct WeakSetIterator: Comparable {
+
+  fileprivate var bucket: Int
+  fileprivate var entry: Int
+
+  public static func < (lhs: WeakSetIterator, rhs: WeakSetIterator) -> Bool {
+    return lhs.bucket == rhs.bucket
+      ? lhs.entry < rhs.entry
+      : lhs.bucket < rhs.entry
   }
 
 }
