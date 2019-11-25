@@ -1,4 +1,4 @@
-import WeakSet
+import Utils
 
 public class Factory<Key> where Key: Comparable & Hashable {
 
@@ -47,28 +47,10 @@ public class Factory<Key> where Key: Comparable & Hashable {
   public private(set) var zero: SFDD<Key>! = nil
   public private(set) var one : SFDD<Key>! = nil
 
-  var unionCache              : [CacheKey<Key>: SFDD<Key>] = [:]
-  var intersectionCache       : [CacheKey<Key>: SFDD<Key>] = [:]
-  var symmetricDifferenceCache: [CacheKey<Key>: SFDD<Key>] = [:]
-  var subtractionCache        : [CacheKey<Key>: SFDD<Key>] = [:]
+  var unionCache              : [[SFDD<Key>]: SFDD<Key>] = [:]
+  var intersectionCache       : [[SFDD<Key>]: SFDD<Key>] = [:]
+  var symmetricDifferenceCache: [[SFDD<Key>]: SFDD<Key>] = [:]
+  var subtractionCache        : [[SFDD<Key>]: SFDD<Key>] = [:]
   private var uniquenessTable : WeakSet<SFDD<Key>> = []
 
 }
-
-// MARK: Caching
-
-enum CacheKey<Key>: Hashable where Key: Comparable & Hashable {
-
-  case set (Set  <SFDD<Key>>)
-  case list(Array<SFDD<Key>>)
-
-  static func ==(lhs: CacheKey, rhs: CacheKey) -> Bool {
-    switch (lhs, rhs) {
-    case let (.set(ls) , .set(rs)) : return ls == rs
-    case let (.list(la), .list(ra)): return la == ra
-    default                        : return false
-    }
-  }
-
-}
-

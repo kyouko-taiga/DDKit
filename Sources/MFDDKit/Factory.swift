@@ -1,4 +1,4 @@
-import WeakSet
+import Utils
 
 public class Factory<Key, Value> where Key: Comparable & Hashable, Value: Hashable {
 
