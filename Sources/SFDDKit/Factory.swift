@@ -3,9 +3,9 @@ import Utils
 public class Factory<Key> where Key: Comparable & Hashable {
 
   public init() {
-    self.zero = SFDD(factory: self, count: 0)
+    self.zero = SFDD(factory: self, isOne: false)
     self.uniquenessTable.insert(self.zero)
-    self.one  = SFDD(factory: self, count: 1)
+    self.one = SFDD(factory: self, isOne: true)
     self.uniquenessTable.insert(self.one)
   }
 

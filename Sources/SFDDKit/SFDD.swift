@@ -67,44 +67,69 @@ import Utils
 ///     // Prints "2"
 public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
 
-  init(key: Key, take: SFDD, skip: SFDD, factory: Factory<Key>) {
-    self.key     = key
-    self.take    = take
-    self.skip    = skip
-    self.factory = factory
-    self.count   = self.take.count + self.skip.count
-
-    self.hashValue = fnv1(data: [key.hashValue, take.hashValue, skip.hashValue, count], size: 4)
-  }
-
-  init(factory: Factory<Key>, count: Int) {
-    self.key     = nil
-    self.take    = nil
-    self.skip    = nil
-    self.factory = factory
-    self.count   = count
-
-    self.hashValue = count
-  }
-
-  public let key : Key!
+  public let key: Key!
   public let take: SFDD!
   public let skip: SFDD!
 
+  /// A flag that indicates whether or not this node is the zero terminal.
+  public var isZero: Bool { self === factory.zero }
+
+  /// A flag that indicates whether or not this node is the one terminal.
+  public let isOne: Bool
+
+  /// A flag that indicates whether or not this node is a terminal.
+  public var isTerminal: Bool { isZero || isOne }
+
+  /// A flag that indicates whether or not this node represents an empty family.
+  public var isEmpty: Bool { isZero }
+
+  /// The number of sets represented by this node.
+  public lazy var count: Int = { [unowned self] in
+    if self.isZero {
+      return 0
+    } else if self.isOne {
+      return 1
+    } else {
+      return self.take.count + self.skip.count
+    }
+  }()
+
+  /// The factory that built this node.
   public unowned let factory: Factory<Key>
 
-  public let count: Int
+  /// The pre-computed hash of this node.
+  private let _hash: Int
 
-  public var isZero    : Bool { return self === self.factory.zero }
-  public var isOne     : Bool { return self === self.factory.one }
-  public var isTerminal: Bool { return self.isZero || self.isOne }
-  public var isEmpty   : Bool { return self.isZero }
+  init(key: Key, take: SFDD, skip: SFDD, factory: Factory<Key>) {
+    self.key = key
+    self.take = take
+    self.skip = skip
+    self.isOne = false
+    self.factory = factory
 
-  public let hashValue: Int
+    var hasher = Hasher()
+    hasher.combine(key)
+    hasher.combine(take._hash)
+    hasher.combine(skip._hash)
+    self._hash = hasher.finalize()
+  }
+
+  init(factory: Factory<Key>, isOne: Bool) {
+    self.key = nil
+    self.take = nil
+    self.skip = nil
+    self.factory = factory
+    self.isOne = isOne
+    self._hash = isOne ? 1 : 0
+  }
 
   /// Returns `true` if these SFDDs contain the same elements.
-  public static func ==(lhs: SFDD, rhs: SFDD) -> Bool {
+  public static func == (lhs: SFDD, rhs: SFDD) -> Bool {
     return lhs === rhs
+  }
+
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(_hash)
   }
 
   /// Returns `true` if the SFDD contains the given element.
@@ -386,10 +411,10 @@ public final class SFDD<Key>: Hashable where Key: Comparable & Hashable {
   }
 
   static func areEqual(_ lhs: SFDD, _ rhs: SFDD) -> Bool {
-    return (lhs.key   == rhs.key)
-      && (lhs.count == rhs.count)
-      && (lhs.take  == rhs.take)
-      && (lhs.skip  == rhs.skip)
+    return (lhs.key == rhs.key)
+        && (lhs.take == rhs.take)
+        && (lhs.skip == rhs.skip)
+        && (lhs.isOne == rhs.isOne)
   }
 
   private var skipMost: SFDD {
