@@ -1,225 +1,164 @@
 import XCTest
-@testable import MFDDKit
+import DDKit
 
-class MFDDTests: XCTestCase {
+final class MFDDTests: XCTestCase {
+
+  func testNodeCreation() {
+    let factory = MFDDFactory<Int, String>(bucketCapacity: 4)
+
+    _ = factory.encode(family: [(0 ..< 10).map({ (key: $0, value: String(describing: $0)) })])
+    XCTAssertEqual(factory.createdCount, 10)
+  }
 
   func testCount() {
-    let factory = Factory<String, Int>()
+    let factory = MFDDFactory<Int, String>()
 
     XCTAssertEqual(0, factory.zero.count)
     XCTAssertEqual(1, factory.one.count)
-    XCTAssertEqual(1, factory.make(["a": 1, "b": 2]).count)
-    XCTAssertEqual(2, factory.make(["a": 1, "b": 2], ["a": 1, "b": 3]).count)
-    XCTAssertEqual(2, factory.make(["a": 1, "b": 2], [:]).count)
+    XCTAssertEqual(1, factory.encode(family: [[1: "a", 2: "b"]]).count)
+    XCTAssertEqual(2, factory.encode(family: [[1: "a", 2: "b"], [1: "a", 3: "c"]]).count)
+    XCTAssertEqual(2, factory.encode(family: [[1: "a", 2: "b"], [:]]).count)
   }
 
   func testEquates() {
-    let factory = Factory<String, Int>()
+    let factory = MFDDFactory<Int, String>()
 
-    XCTAssertEqual(factory.zero                  , factory.zero)
-    XCTAssertEqual(factory.one                   , factory.one)
-    XCTAssertEqual(factory.make([:])             , factory.one)
-    XCTAssertEqual(factory.make(["a": 1, "b": 2]), factory.make(["a": 1, "b": 2]))
+    XCTAssertEqual(factory.zero, factory.zero)
+    XCTAssertEqual(factory.one, factory.one)
+    XCTAssertEqual(factory.encode(family: [[:]]), factory.one)
+    XCTAssertEqual(
+      factory.encode(family: [[1: "a", 2: "b"]]),
+      factory.encode(family: [[1: "a", 2: "b"]]))
   }
 
   func testContains() {
-    let factory = Factory<String, Int>()
-    var family: MFDD<String, Int>
+    let factory = MFDDFactory<Int, String>()
+    var family: MFDD<Int, String>
 
     family = factory.zero
     XCTAssertFalse(family.contains([:]))
 
     family = factory.one
-    XCTAssertTrue (family.contains([:]))
-    XCTAssertFalse(family.contains(["a": 1]))
+    XCTAssert(family.contains([:]))
+    XCTAssertFalse(family.contains([1: "a"]))
 
-    family = factory.make(["a": 1])
-    XCTAssertFalse(family.contains([:]))
-    XCTAssertTrue (family.contains(["a": 1]))
-    XCTAssertFalse(family.contains(["a": 2]))
+    family = factory.encode(family: [[1: "a"]])
+    XCTAssertFalse(family.contains([]))
+    XCTAssert(family.contains([1: "a"]))
+    XCTAssertFalse(family.contains([1: "b"]))
+    XCTAssertFalse(family.contains([2: "a"]))
 
-    family = factory.make(["a": 1, "b": 2], ["a": 1, "b": 3], ["a": 1, "b": 4])
-    XCTAssertTrue (family.contains(["a": 1, "b": 2]))
-    XCTAssertTrue (family.contains(["a": 1, "b": 3]))
-    XCTAssertTrue (family.contains(["a": 1, "b": 4]))
-    XCTAssertFalse(family.contains([:]))
-    XCTAssertFalse(family.contains(["a": 1]))
-    XCTAssertFalse(family.contains(["a": 1, "b": 5]))
+    family = factory.encode(family: [[1: "a", 2: "b"], [1: "a", 3: "c"], [1: "a", 4: "d"]])
+    XCTAssert(family.contains([1: "a", 2: "b"]))
+    XCTAssert(family.contains([1: "a", 3: "c"]))
+    XCTAssert(family.contains([1: "a", 4: "d"]))
+    XCTAssertFalse(family.contains([]))
+    XCTAssertFalse(family.contains([1: "a"]))
+    XCTAssertFalse(family.contains([1: "a", 5: "e"]))
   }
 
-  func testUnion() {
-    let factory = Factory<String, Int>()
+  func testRandomElement() {
+    let factory = MFDDFactory<Int, String>()
 
-    // Union of two empty families.
-    let eue = factory.make([:]).union(factory.make([:]))
-    XCTAssertEqual(eue, factory.one)
+    XCTAssertNil(factory.zero.randomElement())
+    XCTAssertEqual(factory.one.randomElement(), factory.one.randomElement())
+
+    let decoded: [[Int: String]] = [
+      [1: "", 2: "abc", 3: "def", 4: "ghi"],
+      [1: "", 3: "def", 4: "ghi"],
+      [2: "abc", 3: "def", 4: "ghi"],
+    ]
+
+    let family = factory.encode(family: decoded)
+    let member = family.randomElement()
+    XCTAssertNotNil(member)
+    if member != nil {
+      XCTAssert(decoded.contains(member!))
+    }
+  }
+
+  func testBinaryUnion() {
+    let factory = MFDDFactory<Int, String>()
+    var a, b: MFDD<Int, String>
 
     // Union of two identical families.
-    let family = factory.make(["a": 1, "b": 2, "c": 3])
-    XCTAssertEqual(family.union(family), family)
+    a = factory.encode(family: [[:], [3: "c", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    XCTAssertEqual(a.union(a), a)
 
-    // Union of different families.
-    let families = [
-      // Families with overlapping elements.
-      (["a": 1, "b": 3, "c": 9], ["a": 1, "b": 3, "c": 8]),
-      (["a": 1, "b": 3, "c": 8], ["a": 1, "b": 3, "c": 9]),
-      // Families with disjoint elements.
-      (["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]),
-      (["a": 9, "b": 2, "c": 4], ["a": 1, "b": 3, "c": 9]),
-      ]
-    for (fa, fb) in families {
-      let a   = factory.make(fa)
-      let b   = factory.make(fb)
-      let aub = a.union(b)
-      let bua = b.union(a)
+    // Union of two different families.
+    a = factory.encode(family: [[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    b = factory.encode(family: [[3: "a", 5: "e"], [3: "a", 5: "E"]])
+    XCTAssertEqual(
+      Set(a.union(b)),
+      Set([[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"], [3: "a", 5: "E"]]))
 
-      XCTAssertEqual(Set(aub), Set([fa, fb]))
-      XCTAssertEqual(aub, bua)
-    }
+    // Union with a sequence of members.
+    a = factory.encode(family: [[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    let c = [[3: "a", 5: "e"], [3: "a", 5: "E"]]
+    XCTAssertEqual(
+      Set(a.union(c)),
+      Set([[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"], [3: "a", 5: "E"]]))
   }
 
-  func testIntersection() {
-    let factory = Factory<String, Int>()
-
-    // Intersection of two empty families.
-    let eue = factory.make([:]).intersection(factory.make([:]))
-    XCTAssertEqual(eue, factory.one)
+  func testBinaryIntersection() {
+    let factory = MFDDFactory<Int, String>()
+    var a, b: MFDD<Int, String>
 
     // Intersection of two identical families.
-    let family = factory.make([["a": 1, "b": 3, "c": 8], ["a": 0, "b": 2, "c": 4]])
-    XCTAssertEqual(family.intersection(family), family)
+    a = factory.encode(family: [[:], [3: "c", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    XCTAssertEqual(a.intersection(a), a)
 
-    // Intersection of families with overlapping elements.
-    let overlappingFamilies = [
-      (
-        [["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]],
-        [["a": 1, "b": 3, "c": 9], ["a": 5, "b": 6, "c": 7]]
-      ),
-      (
-        [["a": 1, "b": 3, "c": 9], ["a": 5, "b": 6, "c": 7]],
-        [["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]]
-      ),
-      ]
-    for (fa, fb) in overlappingFamilies {
-      let a   = factory.make(fa)
-      let b   = factory.make(fb)
-      let aib = a.intersection(b)
-      let bia = b.intersection(a)
+    // Intersection of two different families.
+    a = factory.encode(family: [[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    b = factory.encode(family: [[3: "a", 5: "e"], [3: "a", 5: "E"]])
+    XCTAssertEqual(Set(a.intersection(b)), Set([[3: "a", 5: "e"]]))
 
-      XCTAssertEqual(Set(aib), Set([["a": 1, "b": 3, "c": 9]]))
-      XCTAssertEqual(aib, bia)
-    }
-
-    // Intersection of families with disjoint elements.
-    let disjointFamilies = [
-      (
-        [["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]],
-        [["a": 1, "b": 3, "c": 0], ["a": 5, "b": 6, "c": 7]]
-      ),
-      (
-        [["a": 1, "b": 3, "c": 0], ["a": 5, "b": 6, "c": 7]],
-        [["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]]
-      ),
-      ]
-    for (fa, fb) in disjointFamilies {
-      let a   = factory.make(fa)
-      let b   = factory.make(fb)
-      let aib = a.intersection(b)
-      let bia = b.intersection(a)
-
-      XCTAssertEqual(aib, factory.zero)
-      XCTAssertEqual(aib, bia)
-    }
+    // Intersection with a sequence of members.
+    a = factory.encode(family: [[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    let c = [[3: "a", 5: "e"], [3: "a", 5: "E"]]
+    XCTAssertEqual(Set(a.intersection(c)), Set([[3: "a", 5: "e"]]))
   }
 
-  func testSymmetricDifference() {
-    let factory = Factory<String, Int>()
-
-    // Symmetric difference between two empty families.
-    let ese = factory.make([]).symmetricDifference(factory.make([]))
-    XCTAssertEqual(ese, factory.zero)
+  func testBinarySymmetricDifference() {
+    let factory = MFDDFactory<Int, String>()
+    var a, b: MFDD<Int, String>
 
     // Symmetric difference between two identical families.
-    let family = factory.make([["a": 1, "b": 3, "c": 8], ["a": 0, "b": 2, "c": 4]])
-    XCTAssertEqual(family.symmetricDifference(family), factory.zero)
+    a = factory.encode(family: [[:], [3: "c", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    XCTAssertEqual(a.symmetricDifference(a), factory.zero)
 
-    // Symmetric difference between families with overlapping elements.
-    let overlappingA = factory.make([["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]])
-    let overlappingB = factory.make([["a": 1, "b": 3, "c": 9], ["a": 5, "b": 6, "c": 7]])
-    let overlappingC = overlappingA.symmetricDifference(overlappingB)
+    // Symmetric difference between two different families.
+    a = factory.encode(family: [[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    b = factory.encode(family: [[3: "a", 5: "e"], [3: "a", 5: "E"]])
     XCTAssertEqual(
-      Set(overlappingC),
-      Set([["a": 0, "b": 2, "c": 4], ["a": 5, "b": 6, "c": 7]]))
+      Set(a.symmetricDifference(b)),
+      Set([[:], [1: "a", 3: "c", 5: "e"], [3: "a", 5: "E"]]))
 
-    // Symmetric difference between families with disjoint elements.
-    let disjointA = factory.make([["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]])
-    let disjointB = factory.make([["a": 1, "b": 3, "c": 0], ["a": 5, "b": 6, "c": 7]])
-    let disjointC = disjointA.symmetricDifference(disjointB)
+    // Symmetric difference with a sequence of members.
+    a = factory.encode(family: [[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    let c = [[3: "a", 5: "e"], [3: "a", 5: "E"]]
     XCTAssertEqual(
-      Set(disjointC),
-      Set([
-        ["a": 1, "b": 3, "c": 9],
-        ["a": 0, "b": 2, "c": 4],
-        ["a": 1, "b": 3, "c": 0],
-        ["a": 5, "b": 6, "c": 7],
-        ]))
+      Set(a.symmetricDifference(c)),
+      Set([[:], [1: "a", 3: "c", 5: "e"], [3: "a", 5: "E"]]))
   }
 
-  func testSubtracting() {
-    let factory = Factory<String, Int>()
+  func testSubtraction() {
+    let factory = MFDDFactory<Int, String>()
+    var a, b: MFDD<Int, String>
 
-    // Subtraction between two empty families.
-    let ese = factory.make([:]).subtracting(factory.make([:]))
-    XCTAssertEqual(ese, factory.zero)
+    // Subtraction of a family by itself.
+    a = factory.encode(family: [[:], [3: "c", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    XCTAssertEqual(a.subtracting(a), factory.zero)
 
-    // Subtraction between two identical families.
-    let family = factory.make([["a": 1, "b": 3, "c": 8], ["a": 0, "b": 2, "c": 4]])
-    XCTAssertEqual(family.subtracting(family), factory.zero)
+    // Subtraction of a family by a different one.
+    a = factory.encode(family: [[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    b = factory.encode(family: [[3: "a", 5: "e"], [3: "a", 5: "E"]])
+    XCTAssertEqual(Set(a.subtracting(b)), Set([[:], [1: "a", 3: "c", 5: "e"]]))
 
-    // Subtraction between families with overlapping elements.
-    let overlappingA = factory.make([["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]])
-    let overlappingB = factory.make([["a": 1, "b": 3, "c": 9], ["a": 5, "b": 6, "c": 7]])
-    let overlappingC = overlappingA.subtracting(overlappingB)
-    XCTAssertEqual(Set(overlappingC), Set([["a": 0, "b": 2, "c": 4]]))
-
-    // Subtraction between families with disjoint elements.
-    let disjointA = factory.make([["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]])
-    let disjointB = factory.make([["a": 1, "b": 3, "c": 0], ["a": 5, "b": 6, "c": 7]])
-    let disjointC = disjointA.subtracting(disjointB)
-    XCTAssertEqual(
-      Set(disjointC),
-      Set([["a": 1, "b": 3, "c": 9], ["a": 0, "b": 2, "c": 4]]))
+    // Subtraction of a family by a sequence of members.
+    a = factory.encode(family: [[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"]])
+    let c = [[3: "a", 5: "e"], [3: "a", 5: "E"]]
+    XCTAssertEqual(Set(a.subtracting(c)), Set([[:], [1: "a", 3: "c", 5: "e"]]))
   }
-
-  func testAsSequence() {
-    let factory = Factory<String, Int>()
-
-    XCTAssertEqual(Set(factory.zero), Set([]))
-    XCTAssertEqual(Set(factory.one) , Set([[:]]))
-
-    XCTAssertEqual(
-      Set(factory.make(["a": 1])),
-      Set([["a": 1]]))
-    XCTAssertEqual(
-      Set(factory.make([:], ["a": 1])),
-      Set([[:], ["a": 1]]))
-    XCTAssertEqual(
-      Set(factory.make(["a": 1, "b": 2], ["a": 1, "b": 2, "c": 3])),
-      Set([["a": 1, "b": 2], ["a": 1, "b": 2, "c": 3]]))
-    XCTAssertEqual(
-      Set(factory.make(["a": 1, "b": 2], ["a": 1, "b": 3, "c": 3])),
-      Set([["a": 1, "b": 2], ["a": 1, "b": 3, "c": 3]]))
-  }
-
-  static var allTests = [
-    ("testCount"              , testCount),
-    ("testEquates"            , testEquates),
-    ("testContains"           , testContains),
-    ("testUnion"              , testUnion),
-    ("testIntersection"       , testIntersection),
-    ("testSymmetricDifference", testSymmetricDifference),
-    ("testSubtracting"        , testSubtracting),
-    ("testAsSequence"         , testAsSequence),
-    ]
 
 }

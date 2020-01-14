@@ -1,4 +1,4 @@
-// swift-tools-version:4.2
+// swift-tools-version:5.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,19 +6,12 @@ import PackageDescription
 let package = Package(
   name: "DDKit",
   products: [
-    .library(name: "SFDDKit", targets: ["SFDDKit"]),
-    .library(name: "MFDDKit", targets: ["MFDDKit"]),
+    .library(name: "DDKit", targets: ["DDKit"]),
   ],
   dependencies: [],
   targets: [
-    .target(name: "SFDDKit", dependencies: ["Homomorphisms", "Utils"]),
-    .target(name: "MFDDKit", dependencies: ["Homomorphisms", "Utils"]),
-    .target(name: "Homomorphisms", dependencies: ["Utils"]),
-    .target(name: "Utils"),
-
-    .testTarget(name: "SFDDTests", dependencies: ["SFDDKit"]),
-    .testTarget(name: "MFDDTests", dependencies: ["MFDDKit"]),
-    .testTarget(name: "HomomorphismsTests", dependencies: ["Homomorphisms"]),
-    .testTarget(name: "UtilsTests", dependencies: ["Utils"]),
+    .target(name: "DDKit", dependencies: []),
+    .testTarget(name: "SFDDTests", dependencies: ["DDKit"]),
+    .testTarget(name: "MFDDTests", dependencies: ["DDKit"]),
   ]
 )
