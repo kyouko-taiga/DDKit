@@ -395,7 +395,7 @@ extension MFDD {
           take: next != nil ? take.mapValues(next!.apply(on:)) : take,
           skip: next?.apply(on: pointer.pointee.skip) ?? pointer.pointee.skip)
       } else {
-        result = factory.zeroPointer
+        result = next?.apply(on: pointer) ?? pointer
       }
 
       cache[pointer] = result
