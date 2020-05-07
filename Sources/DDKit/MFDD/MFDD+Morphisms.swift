@@ -20,7 +20,7 @@ extension MFDD {
     public let assignments: [(key: Key, value: Value)]
 
     /// The next morphism to apply once the first assignment has been processed.
-    private var next: SaturatedMorphism<Insert>?
+    private var next: Insert?
 
     /// The factory that creates the nodes handled by this morphism.
     public unowned let factory: MFDDFactory<Key, Value>
@@ -38,8 +38,7 @@ extension MFDD {
 
       self.assignments = assignments.sorted(by: { a, b in a.key < b.key })
       self.next = assignments.count > 1
-        ? factory.morphisms.saturate(
-          factory.morphisms.insert(assignments: self.assignments.dropFirst()))
+        ? factory.morphisms.insert(assignments: self.assignments.dropFirst())
         : nil
 
       self.factory = factory
@@ -261,7 +260,7 @@ extension MFDD {
     public let assignments: [(key: Key, values: [Value])]
 
     /// The next morphism to apply once the first assignment has been processed.
-    private var next: SaturatedMorphism<InclusiveFilter>?
+    private var next: InclusiveFilter?
 
     /// The factory that creates the nodes handled by this morphism.
     public unowned let factory: MFDDFactory<Key, Value>
@@ -279,8 +278,7 @@ extension MFDD {
 
       self.assignments = assignments.sorted(by: { a, b in a.key < b.key })
       self.next = assignments.count > 1
-        ? factory.morphisms.saturate(
-          factory.morphisms.filter(containing: self.assignments.dropFirst()))
+        ? factory.morphisms.filter(containing: self.assignments.dropFirst())
         : nil
 
       self.factory = factory
@@ -342,7 +340,7 @@ extension MFDD {
     public let assignments: [(key: Key, values: [Value])]
 
     /// The next morphism to apply once the first assignment has been processed.
-    private var next: SaturatedMorphism<ExclusiveFilter>?
+    private var next: ExclusiveFilter?
 
     /// The factory that creates the nodes handled by this morphism.
     public unowned let factory: MFDDFactory<Key, Value>
@@ -360,8 +358,7 @@ extension MFDD {
 
       self.assignments = assignments.sorted(by: { a, b in a.key < b.key })
       self.next = assignments.count > 1
-        ? factory.morphisms.saturate(
-          factory.morphisms.filter(excluding: self.assignments.dropFirst()))
+        ? factory.morphisms.filter(excluding: self.assignments.dropFirst())
         : nil
 
       self.factory = factory

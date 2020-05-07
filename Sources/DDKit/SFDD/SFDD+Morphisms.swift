@@ -19,7 +19,7 @@ extension SFDD {
     public let keys: [Key]
 
     /// The next morphism to apply once the first key has been processed.
-    private var next: SaturatedMorphism<Insert>?
+    private var next: Insert?
 
     /// The factory that creates the nodes handled by this morphism.
     public unowned let factory: SFDDFactory<Key>
@@ -33,7 +33,7 @@ extension SFDD {
       assert(!keys.isEmpty, "Sequence of keys to insert is empty.")
       self.keys = keys.sorted()
       self.next = keys.count > 1
-        ? factory.morphisms.saturate(factory.morphisms.insert(keys: self.keys.dropFirst()))
+        ? factory.morphisms.insert(keys: self.keys.dropFirst())
         : nil
 
       self.factory = factory
@@ -93,7 +93,7 @@ extension SFDD {
     public let keys: [Key]
 
     /// The next morphism to apply once the first key has been processed.
-    private var next: SaturatedMorphism<Remove>?
+    private var next: Remove?
 
     /// The factory that creates the nodes handled by this morphism.
     public unowned let factory: SFDDFactory<Key>
@@ -107,7 +107,7 @@ extension SFDD {
       assert(!keys.isEmpty, "Sequence of keys to remove is empty.")
       self.keys = keys.sorted()
       self.next = keys.count > 1
-        ? factory.morphisms.saturate(factory.morphisms.remove(keys: self.keys.dropFirst()))
+        ? factory.morphisms.remove(keys: self.keys.dropFirst())
         : nil
 
       self.factory = factory
@@ -159,7 +159,7 @@ extension SFDD {
     public let keys: [Key]
 
     /// The next morphism to apply once the first key has been processed.
-    private var next: SaturatedMorphism<InclusiveFilter>?
+    private var next: InclusiveFilter?
 
     /// The factory that creates the nodes handled by this morphism.
     public unowned let factory: SFDDFactory<Key>
@@ -173,7 +173,7 @@ extension SFDD {
       assert(!keys.isEmpty, "Sequence of keys to filter is empty.")
       self.keys = keys.sorted()
       self.next = keys.count > 1
-        ? factory.morphisms.saturate(factory.morphisms.filter(containing: self.keys.dropFirst()))
+        ? factory.morphisms.filter(containing: self.keys.dropFirst())
         : nil
 
       self.factory = factory
@@ -227,7 +227,7 @@ extension SFDD {
     public let keys: [Key]
 
     /// The next morphism to apply once the first key has been processed.
-    private var next: SaturatedMorphism<ExclusiveFilter>?
+    private var next: ExclusiveFilter?
 
     /// The factory that creates the nodes handled by this morphism.
     public unowned let factory: SFDDFactory<Key>
@@ -241,7 +241,7 @@ extension SFDD {
       assert(!keys.isEmpty, "Sequence of keys to filter is empty.")
       self.keys = keys.sorted()
       self.next = keys.count > 1
-        ? factory.morphisms.saturate(factory.morphisms.filter(excluding: self.keys.dropFirst()))
+        ? factory.morphisms.filter(excluding: self.keys.dropFirst())
         : nil
 
       self.factory = factory

@@ -19,8 +19,6 @@ final class NQueensTests: XCTestCase {
 
 private func nQueens(queenCount: Int, factory: SFDDFactory<Int>) -> SFDD<Int> {
 
-  typealias SaturatedRemove = SFDD<Int>.SaturatedMorphism<SFDD<Int>.Remove>
-
   let identity = factory.morphisms.identity
   let zero = factory.morphisms.constant(factory.zero)
 
@@ -37,7 +35,7 @@ private func nQueens(queenCount: Int, factory: SFDDFactory<Int>) -> SFDD<Int> {
   // Precompute the set of indices to remove and generate the corresponding morphisms.
   let indicesToRemove = Dictionary(
     uniqueKeysWithValues: (0 ..< queenCount * queenCount - 1)
-      .map({ (key: Int) -> (Int, SaturatedRemove) in
+      .map({ (key: Int) -> (Int, SFDD<Int>.Remove) in
         let cell = rowColumn(at: key)
         let indicesToRemove = (key + 1 ..< queenCount * queenCount).filter({ i in
           let other = rowColumn(at: i)
@@ -45,7 +43,7 @@ private func nQueens(queenCount: Int, factory: SFDDFactory<Int>) -> SFDD<Int> {
               || cell.column == other.column
               || abs(cell.row - other.row) == abs(cell.column - other.column)
           })
-        return (key, factory.morphisms.saturate(factory.morphisms.remove(keys: indicesToRemove)))
+        return (key, factory.morphisms.remove(keys: indicesToRemove))
       }))
 
   /// Creates an morphism that filter a checkboard to keep only the possible configurations that
@@ -57,7 +55,7 @@ private func nQueens(queenCount: Int, factory: SFDDFactory<Int>) -> SFDD<Int> {
     // Precompute the inductive morphisms to apply at each step.
     let nextFilter = filterValidConfigurations(from: row + 1)
     let next = indicesToRemove.mapValues({
-      (remove: SaturatedRemove) -> (SFDD<Int>.Inductive) -> SFDD<Int>.Inductive.Result in
+      (remove: SFDD<Int>.Remove) -> (SFDD<Int>.Inductive) -> SFDD<Int>.Inductive.Result in
 
       let take: (SFDD<Int>.Pointer) -> SFDD<Int>.Pointer
       if let filter = nextFilter {
