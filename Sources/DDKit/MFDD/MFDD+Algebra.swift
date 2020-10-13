@@ -213,9 +213,9 @@ extension MFDDFactory {
     } else if lhs.pointee.key == rhs.pointee.key {
       let take: [(key: Value, value: MFDD<Key, Value>.Pointer)] = lhs.pointee.take
         .compactMap({ (value, child) in
-          rhs.pointee.take[value].map({ (value, subtraction(child, $0)) })
+          rhs.pointee.take[value] == nil ? (value, child) : rhs.pointee.take[value].map({ (value, subtraction(child, $0)) })
         })
-
+      
       result = node(
         key: lhs.pointee.key,
         take: Dictionary(uniqueKeysWithValues: take),
@@ -223,7 +223,7 @@ extension MFDDFactory {
     } else {
       result = subtraction(lhs, rhs.pointee.skip)
     }
-
+    
     cache.subtraction[cacheKey] = result
     return result
   }

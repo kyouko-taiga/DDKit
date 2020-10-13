@@ -72,6 +72,9 @@ final class MorphismsTests: XCTestCase {
     XCTAssertEqual(
       morphism.apply(on: factory.encode(family: [[1: "a", 2: "b"], [1: "a", 3: "c"]])),
       factory.encode(family: [[1: "a", 2: "b"]]))
+    XCTAssertEqual(
+      morphism.apply(on: factory.encode(family: [[1: "a", 2: "b"], [1: "a", 3: "c"], [1: "a", 3: "d"]])),
+      factory.encode(family: [[1: "a", 2: "b"], [1: "a", 3: "d"]]))
   }
 
   func testComposition() {
