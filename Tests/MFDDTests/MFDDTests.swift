@@ -154,6 +154,11 @@ final class MFDDTests: XCTestCase {
     a = factory.encode(family: [[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"]])
     b = factory.encode(family: [[3: "a", 5: "e"], [3: "a", 5: "E"]])
     XCTAssertEqual(Set(a.subtracting(b)), Set([[:], [1: "a", 3: "c", 5: "e"]]))
+    
+    // Subtraction of a family by a different one.
+    a = factory.encode(family: [[:], [3: "a", 5: "e"], [3: "a", 5: "f"], [1: "z", 2: "p"], [1: "z", 2: "e"]])
+    b = factory.encode(family: [[3: "a", 5: "e"], [1: "z", 2: "e"]])
+    XCTAssertEqual(Set(a.subtracting(b)), Set([[:], [3: "a", 5: "f"], [1: "z", 2: "p"]]))
 
     // Subtraction of a family by a sequence of members.
     a = factory.encode(family: [[:], [3: "a", 5: "e"], [1: "a", 3: "c", 5: "e"]])
