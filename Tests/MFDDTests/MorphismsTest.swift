@@ -116,6 +116,16 @@ final class MorphismsTests: XCTestCase {
       morphism.apply(on: factory.encode(family: [[1: "a", 2: "b"], [1: "a", 3: "c"]])),
       factory.encode(family: [[1: "a", 2: "b", 5: "e"], [1: "a", 2: "b", 3: "c", 5: "e"]]))
   }
+  
+  func testInclusiveFilter() {
+    let morphism = morphisms.filter(containing: [(key: 3, values: ["c","b"]), (key: 4, values: ["d"])])
+
+    XCTAssertEqual(morphism.apply(on: factory.zero), factory.zero)
+    XCTAssertEqual(morphism.apply(on: factory.one), factory.zero)
+    XCTAssertEqual(
+      morphism.apply(on: factory.encode(family: [[2: "a", 3: "c", 4: "d"], [3: "b", 4: "d"], [1: "a", 3: "c"]])),
+      factory.encode(family: [[2: "a", 3: "c", 4: "d"], [3: "b", 4: "d"]]))
+  }
 
   func testExclusiveFilter() {
     let morphism = morphisms.filter(excluding: [(key: 3, values: ["c"]), (key: 4, values: ["d"])])
